@@ -28,11 +28,11 @@ OBJECTS = $(SOURCES:$(SRC_PATH)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 DEPS = $(OBJECTS:.o=.d)
 
 # flags #
-COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g -fopenmp
+COMPILE_FLAGS = -std=c++11 -Wall -Wextra
 INCLUDES = -I include/ -I /usr/local/include
 # Space-separated pkg-config libraries used by this project
-# LIBS = -larmadillo
-LIBS = -lgomp
+LIBS = -larmadillo
+# LIBS = -lgomp
 
 .PHONY: default_target
 default_target: release
@@ -63,6 +63,7 @@ clean:
 all: $(BIN_PATH)/$(BIN_NAME)
 	@$(RM) $(BIN_NAME)
 	@ln -s $(BIN_PATH)/$(BIN_NAME) $(BIN_NAME)
+	./$(BIN_NAME)
 
 # Creation of the executable
 $(BIN_PATH)/$(BIN_NAME): $(OBJECTS)
