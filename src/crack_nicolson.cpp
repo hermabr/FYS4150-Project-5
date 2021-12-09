@@ -88,6 +88,7 @@ void CrackSystem::initialize_A_B() {
 }
 
 void CrackSystem::solve_for_u_next(arma::cx_vec u_next, arma::cx_vec u) {
+    cerr << "If this doesnt work: Fix in the header file, by changing A and B from sp_cx_mat to cx_mat" << endl;
     arma::cx_vec b = B * u;
     solve(u_next, A, b);
 }
