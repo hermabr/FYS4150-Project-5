@@ -83,9 +83,9 @@ void solve_for_u_next(cmat & A, arma::cx_vec u_next, cmat & B, arma::cx_vec u){
 arma::cx_vec initialize_u(int M, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y){
     arma::cx_vec u((M - 2) * (M - 2));
     double h = 1. / M;
+    cd s = 0;
     for (int i = 0; i < M - 2; i++){
         double y = (i + 1) * h;
-        cd s = 0;
         for (int j = 0; j < M - 2; j++){
             double x = (j + 1) * h;
             cd v = exp(
@@ -96,11 +96,9 @@ arma::cx_vec initialize_u(int M, double x_c, double y_c, double sigma_x, double 
             s += v * v;
             u(idx(i, j, M)) = v;
         }
-        for (int j = 0; j < M - 2; j++){ //Normalize
-            u(idx(i, j, M)) /= sqrt(s);
-        }
     }
-
+    u /= s;
+    return u;
 }
 
 int main() {
