@@ -87,7 +87,11 @@ arma::cx_vec initialize_u(int M, double x_c, double y_c, double sigma_x, double 
         double x = (i + 1) * h;
         for (int j = 0; j < M - 2; j++){
             double y = (j + 1) * h;
-            u(idx(i, j, M)) = exp(-(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y) )
+            u(idx(i, j, M)) = exp(
+                -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
+                - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
+                + e_i * p_x * (x - x_c) + e_i * p_y * (y - y_c)
+                );
         }
     }
 }
