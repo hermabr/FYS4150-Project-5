@@ -1,7 +1,7 @@
 #include <armadillo>
 #include <complex>
 #include <iostream>
-#include <config.hpp>
+#include <project5/config.hpp>
 
 using namespace std;
 
@@ -108,7 +108,7 @@ int main() {
 
     initialize_A_B(M, A, B, dt, h);
 
-    A.print();
+    // A.print();
 
     return 0;
 }
