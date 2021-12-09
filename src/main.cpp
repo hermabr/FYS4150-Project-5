@@ -10,7 +10,7 @@ using namespace std;
 
 int idx(int i, int j, int M){
     if (j >= M - 2 or i >= M - 2) throw exception();
-    return i * j * (M - 2);
+    return i * (M - 2) + j;
 }
 
 bool has_flag(const std::string& option, char** begin, char** end){
@@ -84,9 +84,10 @@ arma::cx_vec initialize_u(int M, double x_c, double y_c, double sigma_x, double 
     arma::cx_vec u((M - 2) * (M - 2));
     double h = 1. / M;
     for (int i = 0; i < M - 2; i++){
-        double x = (i + 1) * h;
+        double y = (i + 1) * h;
         for (int j = 0; j < M - 2; j++){
-            double y = (j + 1) * h;
+            double x = (j + 1) * h;
+
             u(idx(i, j, M)) = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
@@ -94,6 +95,7 @@ arma::cx_vec initialize_u(int M, double x_c, double y_c, double sigma_x, double 
                 );
         }
     }
+
 }
 
 int main() {
