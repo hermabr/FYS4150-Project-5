@@ -25,7 +25,9 @@ CrackSystem::CrackSystem(double dt, double h) :  dt(dt), h(h) {
     cerr << "C" << endl;
 
     initialize_A_B();
+    cerr << "D" << endl;
     arma::cx_vec u = initialize_u(1, 1, 1, 1, 1, 1);
+    cerr << "E" << endl;
 
     // A.print();
 
@@ -51,8 +53,14 @@ int CrackSystem::ij_to_k(int i, int j){
 // TODO: Possible to initialize the diagonal elements in one liners?
 // void CrackSystem::initialize_A_B(int M, cmat & A, cmat & B, double dt, double h, cmat v) {
 void CrackSystem::initialize_A_B() {
-    A = cmat(M_star_square, M_star_square, arma::fill::zeros);
-    B = cmat(M_star_square, M_star_square, arma::fill::zeros);
+    // A = arma::sp_cx_mat(M_star_square, M_star_square, arma::fill::zeros);
+    // B = arma::sp_cx_mat(M_star_square, M_star_square, arma::fill::zeros);
+
+    A = arma::sp_cx_mat(length, length);
+    B = arma::sp_cx_mat(length, length);
+
+    // A = cmat(M_star_square, M_star_square, arma::fill::zeros);
+    // B = cmat(M_star_square, M_star_square, arma::fill::zeros);
 
     arma::cx_vec a(M_star_square, arma::fill::zeros);
     arma::cx_vec b(M_star_square, arma::fill::zeros);
