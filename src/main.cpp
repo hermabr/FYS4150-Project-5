@@ -8,6 +8,7 @@ using namespace std;
 
 #define cd complex<double>
 #define cmat arma::cx_mat
+using namespace std::complex_literals;
 
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -29,6 +30,10 @@ void print_help_message() {
 }
 
 int main() {
+    complex<double> drugs = 4 + 2i;
+    cout << drugs << endl;
+    exit(69);
+
     // TODO: How should M be initialized?
     int M = 5;
     double dt = 0.1, h = 0.1;

@@ -21,6 +21,8 @@ CrackSystem::CrackSystem(int M, double dt, double h) :  M(M), dt(dt), h(h) {
     initialize_A_B();
     arma::cx_vec u = initialize_u(1, 1, 1, 1, 1, 1);
 
+    // A.print();
+
     cerr << "u before:" << endl;
     u.print();
     cerr << endl;
@@ -102,13 +104,6 @@ arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
     arma::cx_vec new_u = arma::spsolve(A, b);
     return new_u;
 }
-
-
-// arma::cx_vec SystemMatrix::calc_new_u(const arma::cx_vec & u) const {
-//     arma::cx_vec b = B * u;
-//     arma::cx_vec u_new = arma::spsolve(A, b, "superlu");
-//     return u_new;
-// }
 
 arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
     arma::cx_vec u(M_star * M_star);
