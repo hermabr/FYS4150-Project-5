@@ -11,7 +11,7 @@ using namespace std::complex_literals;
 #define cd complex<double>
 #define cmat arma::cx_mat
 
-CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt) {
+CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt), T(T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
     M = (int) (1.0 / h) + 1;

@@ -23,16 +23,16 @@ struct Config {
     }
 
     void print() {
-        std::cout << "h: " << h << ", ";
-        std::cout << "dt: " << dt << ", ";
-        std::cout << "T: " << T << ", ";
-        std::cout << "x_c: " << x_c << ", ";
-        std::cout << "y_c: " << y_c << ", ";
-        std::cout << "s_x: " << s_x << ", ";
-        std::cout << "s_y: " << s_y << ", ";
-        std::cout << "p_x: " << p_x << ", ";
-        std::cout << "p_y: " << p_y << ", ";
-        std::cout << "v_0: " << v_0 << std::endl;
+        std::cerr << "h=" << h << ", ";
+        std::cerr << "dt=" << dt << ", ";
+        std::cerr << "T=" << T << ", ";
+        std::cerr << "x_c=" << x_c << ", ";
+        std::cerr << "y_c=" << y_c << ", ";
+        std::cerr << "s_x=" << s_x << ", ";
+        std::cerr << "s_y=" << s_y << ", ";
+        std::cerr << "p_x=" << p_x << ", ";
+        std::cerr << "p_y=" << p_y << ", ";
+        std::cerr << "v_0=" << v_0 << std::endl;
     }
 };
 
