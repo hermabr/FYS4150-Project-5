@@ -19,7 +19,15 @@ CrackSystem::CrackSystem(int M, double dt, double h) :  M(M), dt(dt), h(h) {
     v.fill(cd(1, 0));
 
     initialize_A_B();
-    initialize_u(1, 1, 1, 1, 1, 1);
+    arma::cx_vec u = initialize_u(1, 1, 1, 1, 1, 1);
+
+    cerr << "u before:" << endl;
+    u.print();
+
+    solve_for_u_next(u);
+
+    cerr << "u after:" << endl;
+    u.print();
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -88,12 +96,12 @@ void CrackSystem::initialize_A_B() {
     }
 }
 
-void CrackSystem::solve_for_u_next(arma::cx_vec u_next, arma::cx_vec u) {
-    cerr << "If this doesnt work: Fix in the header file, by changing A and B from sp_cx_mat to cx_mat" << endl;
+arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
     arma::cx_vec b = B * u;
     // solve(u_next, A, b);
-    u_next = arma::spsolve(A, b);
-    // arma::cx_vec new_u = arma::spsolve(A, b, "superlu");
+    // arma::cx_vec u_next = arma::spsolve(A, b);
+    arma::cx_vec new_u = arma::spsolve(A, b, "superlu");
+    return new_u;
     // new_u.print();
 }
 
