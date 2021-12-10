@@ -25,9 +25,10 @@ CrackSystem::CrackSystem(int M, double dt, double h) :  M(M), dt(dt), h(h) {
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
 int CrackSystem::ij_to_k(int i, int j){
     // TODO: is this assert correct?
-    assert (j <= M_star_square && i <= M_star_square);
+    assert (j <= M_star && i <= M_star);
     // if (j >= M_star_square or i >= M_star_square) throw exception();
-    return i * M_star_square + j;
+    // return i * M_star_square + j;
+    return i * M_star + j;
 }
 
 // TODO: Possible to initialize the diagonal elements in one liners?
@@ -90,8 +91,18 @@ void CrackSystem::initialize_A_B() {
 void CrackSystem::solve_for_u_next(arma::cx_vec u_next, arma::cx_vec u) {
     cerr << "If this doesnt work: Fix in the header file, by changing A and B from sp_cx_mat to cx_mat" << endl;
     arma::cx_vec b = B * u;
-    solve(u_next, A, b);
+    // solve(u_next, A, b);
+    u_next = arma::spsolve(A, b);
+    // arma::cx_vec new_u = arma::spsolve(A, b, "superlu");
+    // new_u.print();
 }
+
+
+// arma::cx_vec SystemMatrix::calc_new_u(const arma::cx_vec & u) const {
+//     arma::cx_vec b = B * u;
+//     arma::cx_vec u_new = arma::spsolve(A, b, "superlu");
+//     return u_new;
+// }
 
 arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
     arma::cx_vec u(M_star * M_star);
