@@ -11,34 +11,20 @@ using namespace std::complex_literals;
 #define cd complex<double>
 #define cmat arma::cx_mat
 
-CrackSystem::CrackSystem(double dt, double h) :  dt(dt), h(h) {
+CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
     M = (int) (1.0 / h) + 1;
     M_star = M - 2; M_star_square = M_star * M_star;
     
     // TODO: DO SOMETHING WITH v
-    cerr << "A" << endl;
     cmat v = cmat(M, M);
-    cerr << "B" << endl;
     v.fill(cd(1, 0));
-    cerr << "C" << endl;
 
     initialize_A_B();
-    cerr << "D" << endl;
-    arma::cx_vec u = initialize_u(1, 1, 1, 1, 1, 1);
-    cerr << "E" << endl;
-
-    // A.print();
-
-    cerr << "u before:" << endl;
-    u.print();
-    cerr << endl;
+    arma::cx_vec u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
 
     u = solve_for_u_next(u);
-
-    cerr << "u after:" << endl;
-    u.print();
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -53,14 +39,8 @@ int CrackSystem::ij_to_k(int i, int j){
 // TODO: Possible to initialize the diagonal elements in one liners?
 // void CrackSystem::initialize_A_B(int M, cmat & A, cmat & B, double dt, double h, cmat v) {
 void CrackSystem::initialize_A_B() {
-    // A = arma::sp_cx_mat(M_star_square, M_star_square, arma::fill::zeros);
-    // B = arma::sp_cx_mat(M_star_square, M_star_square, arma::fill::zeros);
-
-    A = arma::sp_cx_mat(length, length);
-    B = arma::sp_cx_mat(length, length);
-
-    // A = cmat(M_star_square, M_star_square, arma::fill::zeros);
-    // B = cmat(M_star_square, M_star_square, arma::fill::zeros);
+    A = arma::sp_cx_mat(M_star_square, M_star_square);
+    B = arma::sp_cx_mat(M_star_square, M_star_square);
 
     arma::cx_vec a(M_star_square, arma::fill::zeros);
     arma::cx_vec b(M_star_square, arma::fill::zeros);

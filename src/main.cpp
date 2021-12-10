@@ -38,7 +38,7 @@ Config parse_config(string filename) {
     ifstream config_file(filename);
 
     string variable_name;
-    string variable_names[10] = {"h", "dt", "T", "x_c", "s_x", "p_x", "y_c", "s_y", "p_y", "v_0"};
+    string variable_names[10] = {"h", "dt", "T", "x_c", "y_c", "s_x", "s_y", "p_x", "p_y", "v_0"};
 
     double values[10];
 
@@ -55,8 +55,8 @@ Config parse_config(string filename) {
 
 int main() {
     Config config = parse_config("config.in");
-
-    CrackSystem cs(config.dt, config.h);
+    config.print();
+    CrackSystem cs(config.h, config.dt, config.T, config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y, config.v_0);
 
     return 0;
 }
