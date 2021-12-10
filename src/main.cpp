@@ -1,21 +1,26 @@
-#include <armadillo>
+// #include <iostream>
+// #include <complex>
+//
+// using namespace std::complex_literals;
+//
+// int main() {
+//     auto drugs = 1.0 + 3.0i;
+//     std::cout << drugs << '\n';
+// }
+
 #include <complex>
+#include <fstream>
+#include <assert.h> 
 #include <iostream>
+#include <armadillo>
 #include <project5/config.hpp>
 #include <project5/crack_nicolson.hpp>
 
-using namespace std;
-
 #define cd complex<double>
 #define cmat arma::cx_mat
+
+using namespace std;
 using namespace std::complex_literals;
-
-
-// TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
-int idx(int i, int j, int M){
-    if (j >= M - 2 or i >= M - 2) throw exception();
-    return i * (M - 2) + j;
-}
 
 bool has_flag(const std::string& option, char** begin, char** end){
     return std::find(begin, end, option) != end;
@@ -29,23 +34,29 @@ void print_help_message() {
     cout << "\t-h\tShow this help message" << endl;
 }
 
+Config parse_config(string filename) {
+    ifstream config_file(filename);
+
+    string variable_name;
+    string variable_names[10] = {"h", "dt", "T", "x_c", "s_x", "p_x", "y_c", "s_y", "p_y", "v_0"};
+
+    double values[10];
+
+    for (int i = 0; i < 10; i++) {
+        config_file >> variable_name;
+        assert (variable_name == variable_names[i]);
+        config_file >> values[i];
+    }
+
+    Config config {values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9]};
+
+    return config;
+}
+
 int main() {
-    complex<double> drugs = 4 + 2i;
-    cout << drugs << endl;
-    exit(69);
+    Config config = parse_config("config.in");
 
-    // TODO: How should M be initialized?
-    int M = 5;
-    double dt = 0.1, h = 0.1;
-
-    CrackSystem cs(M, dt, h);
-    // int M = 5;
-    // cmat A, B;
-    // cd dt = 0.1, h = 0.1;
-    //
-    // initialize_A_B(M, A, B, dt, h);
-
-    // A.print();
+    CrackSystem cs(config.dt, config.h);
 
     return 0;
 }

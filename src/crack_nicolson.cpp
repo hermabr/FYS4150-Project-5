@@ -5,18 +5,24 @@
 #include "project5/crack_nicolson.hpp"
 
 using namespace std;
+using namespace std::complex_literals;
 
 // TODO: Remove these and replace with the non-macros
 #define cd complex<double>
 #define cmat arma::cx_mat
 
-CrackSystem::CrackSystem(int M, double dt, double h) :  M(M), dt(dt), h(h) {
-    // std::cout << M << " " << dt << " " << h << std::endl;
+CrackSystem::CrackSystem(double dt, double h) :  dt(dt), h(h) {
+    if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
+
+    M = (int) (1.0 / h) + 1;
     M_star = M - 2; M_star_square = M_star * M_star;
     
     // TODO: DO SOMETHING WITH v
+    cerr << "A" << endl;
     cmat v = cmat(M, M);
+    cerr << "B" << endl;
     v.fill(cd(1, 0));
+    cerr << "C" << endl;
 
     initialize_A_B();
     arma::cx_vec u = initialize_u(1, 1, 1, 1, 1, 1);
@@ -51,23 +57,23 @@ void CrackSystem::initialize_A_B() {
     arma::cx_vec a(M_star_square, arma::fill::zeros);
     arma::cx_vec b(M_star_square, arma::fill::zeros);
 
-    cd r = e_i * dt / (2. * h * h);
+    cd r = 1i * dt / (2. * h * h);
 
-    cerr << "I am not sure how to initialize v(i,j )" << endl;
+    cerr << "I am not sure how to initialize v(i,j)" << endl;
     // TODO: I assume this one is categorically better (except the fact that it doesn't work yet)
     // for (int i = 0; i < N; i++) {
     //     for (int j = 0; j < N; j++) {
     //         int k = ij_to_k(i, j);
     //
-    //         a(k) = 1. + 4. * r + e_i * dt / 2. * v_i_j;
-    //         b(k) = 1. - 4. * r - e_i * dt / 2. * v_i_j;
+    //         a(k) = 1. + 4. * r + 1i * dt / 2. * v_i_j;
+    //         b(k) = 1. - 4. * r - 1i * dt / 2. * v_i_j;
     //     }
     // }
     
     cd v_i_j = 1.;
     for (int k = 0; k < M_star_square; k++) {
-        a(k) = 1. + 4. * r + e_i * dt / 2. * v_i_j;
-        b(k) = 1. - 4. * r - e_i * dt / 2. * v_i_j;
+        a(k) = 1. + 4. * r + 1i * dt / 2. * v_i_j;
+        b(k) = 1. - 4. * r - 1i * dt / 2. * v_i_j;
     }
 
     for (int k = 0; k < M_star_square; k++) {
@@ -116,7 +122,7 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
             cd v = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
-                + e_i * p_x * (x - x_c) + e_i * p_y * (y - y_c)
+                + 1i * p_x * (x - x_c) + 1i * p_y * (y - y_c)
                 );
             s += v * v;
             u(ij_to_k(i, j)) = v;
