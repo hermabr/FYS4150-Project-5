@@ -20,7 +20,9 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-
+    cerr << "C" << endl;
+    initialize_V_double_slit();
+    exit(420);
     initialize_A_B();
     arma::cx_vec u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
 
@@ -30,11 +32,12 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
 int CrackSystem::ij_to_k(int i, int j){
     // TODO: is this assert correct?
-    assert (j <= M_star && i <= M_star);
-    // if (j >= M_star_square or i >= M_star_square) throw exception();
+    if (j >= M_star_square or i >= M_star_square) throw exception(); // TODO: What exception?
     // return i * M_star_square + j;
     return i * M_star + j;
 }
+
+
 
 // TODO: Possible to initialize the diagonal elements in one liners?
 // void CrackSystem::initialize_A_B(int M, cmat & A, cmat & B, double dt, double h, cmat v) {
@@ -104,7 +107,7 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
     double h = 1. / M;
     cd s = 0;
     for (int i = 0; i < M_star; i++){
-        double y = (i + 1) * h;
+        double y = (M_star - i) * h;
         for (int j = 0; j < M_star; j++){
             double x = (j + 1) * h;
             cd v = exp(
@@ -118,4 +121,23 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
     }
     u /= s;
     return u;
+}
+
+
+arma::sp_mat CrackSystem::initialize_V_double_slit(){ 
+    //arma::sp_mat V(M_star, M_star, arma::fill::zeros);
+    arma::sp_mat V(M_star, M_star);
+    int V_0 = 1; // temp
+    for (int i = 0; i < M_star; i++){
+        int y = (M_star - i) * h;
+        if ((y <= .575 and y >= .525) or (y <= .475 and y >= .425))
+            continue;
+        int j = (.49 - h) / h; // is this correct?
+        while ((j + 1) * h <= .51){
+            V(i, j) = V_0;
+            j++;
+        }
+    }
+    V.print();
+    return V;
 }
