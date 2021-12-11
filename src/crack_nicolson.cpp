@@ -21,8 +21,7 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
     cerr << "C" << endl;
-    initialize_V_double_slit();
-    exit(420);
+    initialize_V_double_slit(v_0);
     initialize_A_B();
     arma::cx_vec u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
 
@@ -35,6 +34,14 @@ int CrackSystem::ij_to_k(int i, int j){
     if (j >= M_star_square or i >= M_star_square) throw exception(); // TODO: What exception?
     // return i * M_star_square + j;
     return i * M_star + j;
+}
+
+double CrackSystem::i_to_y(int i){
+    return 1 - (double)(i + 1) / M_star;
+}
+
+double CrackSystem::j_to_x(int j){
+    return (double)(j + 1) / M_star;
 }
 
 
@@ -104,12 +111,11 @@ arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
 
 arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
     arma::cx_vec u(M_star * M_star);
-    double h = 1. / M;
     cd s = 0;
     for (int i = 0; i < M_star; i++){
-        double y = (M_star - i) * h;
+        double y = i_to_y(i);
         for (int j = 0; j < M_star; j++){
-            double x = (j + 1) * h;
+            double x = j_to_x(j);
             cd v = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
@@ -124,17 +130,18 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
 }
 
 
-arma::sp_mat CrackSystem::initialize_V_double_slit(){ 
+arma::sp_mat CrackSystem::initialize_V_double_slit(double v_0){ 
     //arma::sp_mat V(M_star, M_star, arma::fill::zeros);
     arma::sp_mat V(M_star, M_star);
-    int V_0 = 1; // temp
     for (int i = 0; i < M_star; i++){
-        int y = (M_star - i) * h;
+        double y = i_to_y(i);
+        cout << "y: "<< y << endl;
         if ((y <= .575 and y >= .525) or (y <= .475 and y >= .425))
             continue;
         int j = (.49 - h) / h; // is this correct?
-        while ((j + 1) * h <= .51){
-            V(i, j) = V_0;
+        while (j_to_x(j) <= .51){
+            cout << "x: "<< j_to_x(j) << endl;
+            V(i, j) = v_0;
             j++;
         }
     }
