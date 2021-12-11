@@ -11,6 +11,7 @@ using namespace std::complex_literals;
 #define cd complex<double>
 #define cmat arma::cx_mat
 
+// TODO: Rename hehe
 CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt), T(T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
@@ -121,11 +122,11 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
                 + 1i * p_x * (x - x_c) + 1i * p_y * (y - y_c)
                 );
-            s += v * v;
+            s += std::conj(v) * v;
             u(ij_to_k(i, j)) = v;
         }
     }
-    u /= s;
+    u /= sqrt(s);
     return u;
 }
 
