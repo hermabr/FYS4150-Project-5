@@ -6,6 +6,7 @@ compile_commands.json
 .vscode
 venv
 report
+output/data
 
 # Prerequisites
 *.d

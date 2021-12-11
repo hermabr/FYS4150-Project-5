@@ -15,6 +15,7 @@ using namespace std::complex_literals;
 // TODO: Rename hehe
 CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt), T(T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
+    // TODO: Check that T/dt is a whole number?
 
     M = (int) (1.0 / h) + 1;
     M_star = M - 2; M_star_square = M_star * M_star;
@@ -22,17 +23,25 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-    cerr << "C" << endl;
     V = initialize_V_double_slit(v_0);
     initialize_A_B();
     u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
     cout << setprecision(15);
     cout << "total probability after initialization: " << total_probability() << endl;
     
-    for (int i = 1; i <= 100; i ++){
+    // TODO: CHANGE THIS PLZ
+    int timesteps = (int) (T / dt);
+
+    arma::cx_mat U = arma::cx_mat(timesteps, M_star_square);
+    // TODO: Make sure we have correct time steps 
+    for (int t = 1; t <= timesteps; t ++){
         u = solve_for_u_next(u);
-        cout << "total probability after " << i <<" step(s): " << total_probability() << endl;
+        for (int i = 0; i < M_star_square; i ++){
+            U(t - 1, i) = u(i);
+        }
+        cout << "total probability after " << t <<" step(s): " << total_probability() << endl;
     }
+    U.save("UBER.bin");
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -119,7 +128,7 @@ arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
 }
 
 arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
-    arma::cx_vec u(M_star * M_star);
+    arma::cx_vec u(M_star_square);
     cd s = 0;
     for (int i = 0; i < M_star; i++){
         double y = i_to_y(i);
@@ -152,7 +161,7 @@ arma::sp_mat CrackSystem::initialize_V_double_slit(double v_0){
             j++;
         }
     }
-    V.print();
+    // V.print();
     return V;
 }
 
