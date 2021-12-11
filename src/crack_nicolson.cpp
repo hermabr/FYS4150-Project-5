@@ -17,6 +17,9 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
     // TODO: Check that T/dt is a whole number?
 
+    arma::superlu_opts opts;
+    opts.symmetric = true;
+
     M = (int) (1.0 / h) + 1;
     M_star = M - 2; M_star_square = M_star * M_star;
     
@@ -123,7 +126,7 @@ void CrackSystem::initialize_A_B() {
 
 arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
     arma::cx_vec b = B * u;
-    arma::cx_vec new_u = arma::spsolve(A, b);
+    arma::cx_vec new_u = arma::spsolve(A, b, "superlu", opts);
     return new_u;
 }
 
@@ -137,7 +140,7 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
             cd v = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
-                + 1i * p_x * (x - x_c) + 1i * p_y * (y - y_c)
+                + 1.i * p_x * (x - x_c) + 1.i * p_y * (y - y_c)
                 );
             s += real(v) * real(v) + imag(v) * imag(v);
             u(ij_to_k(i, j)) = v;

@@ -11,6 +11,7 @@ class CrackSystem {
         int ij_to_k(int i, int j);
         double j_to_x(int j);
         double i_to_y(int i);
+        arma::superlu_opts opts;
         int M, M_star, M_star_square;
         double h, dt, T;
         arma::sp_cx_mat A, B;
