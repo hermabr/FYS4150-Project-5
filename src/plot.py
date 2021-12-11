@@ -73,7 +73,7 @@ def animation(i):
 
     # Update z data
     img.set_data(probabilities[i])
-
+    dt = 1
     # Update the time label
     current_time = t_min + i * dt
     time_txt.set_text("t = {:.3e}".format(current_time))
