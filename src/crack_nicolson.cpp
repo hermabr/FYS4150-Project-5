@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <assert.h> 
 #include <armadillo>
 #include "project5/config.hpp"
@@ -22,12 +23,16 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
     cerr << "C" << endl;
-    initialize_V_double_slit(v_0);
+    V = initialize_V_double_slit(v_0);
     initialize_A_B();
     u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
+    cout << setprecision(15);
     cout << "total probability after initialization: " << total_probability() << endl;
-    u = solve_for_u_next(u);
-    cout << "total probability 1 step: " << total_probability() << endl;
+    
+    for (int i = 1; i <= 100; i ++){
+        u = solve_for_u_next(u);
+        cout << "total probability after " << i <<" step(s): " << total_probability() << endl;
+    }
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -70,8 +75,10 @@ void CrackSystem::initialize_A_B() {
     //     }
     // }
     
-    cd v_i_j = 1.;
     for (int k = 0; k < M_star_square; k++) {
+        int i = k / M_star;
+        int j = k % M_star;
+        double v_i_j = V(i, j);
         a(k) = 1. + 4. * r + 1i * dt / 2. * v_i_j;
         b(k) = 1. - 4. * r - 1i * dt / 2. * v_i_j;
     }
@@ -123,7 +130,7 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
                 + 1i * p_x * (x - x_c) + 1i * p_y * (y - y_c)
                 );
-            s += std::conj(v) * v;
+            s += real(v) * real(v) + imag(v) * imag(v);
             u(ij_to_k(i, j)) = v;
         }
     }
@@ -157,7 +164,9 @@ double CrackSystem::probability_at(int i, int j){
 double CrackSystem::total_probability(){
     double p = 0;
     for (int i = 0; i < M_star; i++)
-        for (int j = 0; j < M_star; j++)
+        for (int j = 0; j < M_star; j++){
             p += probability_at(i, j);
+        }
+            
     return p;
 }
