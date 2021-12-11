@@ -24,9 +24,10 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     cerr << "C" << endl;
     initialize_V_double_slit(v_0);
     initialize_A_B();
-    arma::cx_vec u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
-
+    u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
+    cout << "total probability after initialization: " << total_probability() << endl;
     u = solve_for_u_next(u);
+    cout << "total probability 1 step: " << total_probability() << endl;
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -136,16 +137,27 @@ arma::sp_mat CrackSystem::initialize_V_double_slit(double v_0){
     arma::sp_mat V(M_star, M_star);
     for (int i = 0; i < M_star; i++){
         double y = i_to_y(i);
-        cout << "y: "<< y << endl;
         if ((y <= .575 and y >= .525) or (y <= .475 and y >= .425))
             continue;
         int j = (.49 - h) / h; // is this correct?
         while (j_to_x(j) <= .51){
-            cout << "x: "<< j_to_x(j) << endl;
             V(i, j) = v_0;
             j++;
         }
     }
     V.print();
     return V;
+}
+
+double CrackSystem::probability_at(int i, int j){
+    cd uij = u(ij_to_k(i, j));
+    return real(uij) * real(uij) + imag(uij) * imag(uij);
+}
+
+double CrackSystem::total_probability(){
+    double p = 0;
+    for (int i = 0; i < M_star; i++)
+        for (int j = 0; j < M_star; j++)
+            p += probability_at(i, j);
+    return p;
 }
