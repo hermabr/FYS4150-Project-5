@@ -10,6 +10,7 @@ U = pa.cx_mat()  # format (t, x, y)
 
 U.load("UBER.bin", pa.arma_binary)
 
+#TODO: add boundary points (all with value 0)
 U = np.array(U)
 U = U.reshape(320, 199, 199)  # format (t, y, x)
 
