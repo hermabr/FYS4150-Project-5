@@ -139,6 +139,12 @@ if __name__ == "__main__":
         action="store_true",
     )
     args = parser.parse_args()
+<<<<<<< HEAD
     if args.plot or args.all or True:
         plot = Plotter("output/data/double_slit_dt_0.000025.bin")
         plot.create_animation()
+=======
+    if args.plot or args.all:
+        plot = Plotter("output/data/double_slit.bin")
+        plot.create_animation(show=True)
+>>>>>>> 3de71d4 (dunno)

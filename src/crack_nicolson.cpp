@@ -13,7 +13,7 @@ using namespace std::complex_literals;
 #define cmat arma::cx_mat
 
 // TODO: Rename hehe
-CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y, double v_0) :  h(h), dt(dt), T(T) {
+CrackSystem::CrackSystem(Config config, slits slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
     // TODO: Check that T/dt is a whole number?
 
@@ -26,14 +26,12 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-    V = initialize_V(v_0, slits::three);
+    V = initialize_V(config.v_0, slits);
     initialize_A_B();
-    u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
-    u.print();
+    u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
     u.save("output/data/u.bin");
-    exit(69);
-    cout << setprecision(15);
-    cout << "total probability after initialization: " << total_probability() << endl;
+    cout << scientific << setprecision(15);
+    cout << "deviation from 1 of total probability after initialization: " << 1 - total_probability() << endl;
     
     // TODO: CHANGE THIS PLZ
     int timesteps = (int) (T / dt);
@@ -45,7 +43,7 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
         for (int i = 0; i < M_star_square; i ++){
             U(t - 1, i) = u(i);
         }
-        cout << "total probability after " << t <<" step(s): " << total_probability() << endl;
+        cout << "deviation from 1 of total probability after " << t <<" step(s): " << 1 - total_probability() << endl;
     }
     U.save("output/data/UBER.bin");
 }
