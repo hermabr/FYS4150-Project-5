@@ -193,7 +193,7 @@ double CrackSystem::total_probability(){
 }
 
 void CrackSystem::simulate(){
-        // TODO: CHANGE THIS PLZ
+    // TODO: CHANGE THIS PLZ
     int timesteps = (int) (T / dt);
 
     arma::cx_mat U = arma::cx_mat(timesteps, M_star_square);
