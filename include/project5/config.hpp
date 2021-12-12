@@ -4,23 +4,11 @@
 #include <complex>
 
 struct Config {
-    double h, dt, T, x_c, s_x, p_x, y_c, s_y, p_y, v_0;
+    double h, dt, T, x_c, y_c, s_x, s_y, p_x, p_y, v_0;
 
     // initialize
     // void init(std::string filename) {
-    //     string variable_names[10] = {"h", "dt", "T", "x_c", "y_c", "s_x", "s_y", "p_x", "p_y", "v_0"};
-    void init(double h_, double dt_, double T_, double x_c_, double y_c_, double s_x_, double s_y_, double p_x_, double p_y_, double v_0_) {
-        h = h_;
-        dt = dt_;
-        T = T_;
-        x_c = x_c_;
-        y_c = y_c_;
-        s_x = s_x_;
-        s_y = s_y_;
-        p_x = p_x_;
-        p_y = p_y_;
-        v_0 = v_0_;
-    }
+    //     string variable_names[10] = {"h", "dt", "T", "x_c", "y_c", "s_x", "s_y", "p_x", "p_y", "v_0"}
 
     void print() {
         std::cerr << "h=" << h << ", ";
