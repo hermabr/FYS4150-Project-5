@@ -26,13 +26,14 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-    V = initialize_V(v_0, slits::three);
+    // V = initialize_V(v_0, slits::three);
+    V = initialize_V(v_0, slits::two);
     initialize_A_B();
     u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
-    u.print();
-    u.save("output/data/u.bin");
-    exit(69);
-    cout << setprecision(15);
+    // u.print();
+    // u.save("output/data/u.bin");
+    // exit(69);
+    cout << setprecision(15) << scientific;
     cout << "total probability after initialization: " << total_probability() << endl;
     
     // TODO: CHANGE THIS PLZ
@@ -47,7 +48,7 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
         }
         cout << "total probability after " << t <<" step(s): " << total_probability() << endl;
     }
-    U.save("output/data/UBER.bin");
+    U.save("output/data/double_slit_dt_0.000025.bin");
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
