@@ -26,7 +26,7 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-    V = initialize_V_double_slit(v_0);
+    V = initialize_V(v_0, slits::three);
     initialize_A_B();
     u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
     u.print();
@@ -79,7 +79,6 @@ void CrackSystem::initialize_A_B() {
 
     cd r = 1i * dt / (2. * h * h);
 
-    cerr << "I am not sure how to initialize v(i,j)" << endl;
     // TODO: I assume this one is categorically better (except the fact that it doesn't work yet)
     // for (int i = 0; i < N; i++) {
     //     for (int j = 0; j < N; j++) {
@@ -154,12 +153,35 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
 }
 
 
-arma::sp_mat CrackSystem::initialize_V_double_slit(double v_0){ 
+arma::sp_mat CrackSystem::initialize_V(double v_0, slits slits){ 
     //arma::sp_mat V(M_star, M_star, arma::fill::zeros);
     arma::sp_mat V(M_star, M_star);
+    arma::vec slit_tops;
+
+    switch(slits) {
+        case slits::one: 
+            slit_tops = {.525};
+            break;
+        case slits::two: 
+            slit_tops = {.575, .475};
+            break;
+        case slits::three:
+            slit_tops = {.625, .525, .425};
+            break;
+    };
+
+    auto is_slit = [slit_tops](double y){
+        float slit_width = .05;
+        for (int i = 0; i < slit_tops.size(); i++){
+            if (y <= slit_tops(i) and y >= slit_tops(i) - slit_width) // is inclusive correct?
+                return true;
+        }
+        return false;
+    };
+
     for (int i = 0; i < M_star; i++){
         double y = i_to_y(i);
-        if ((y <= .575 and y >= .525) or (y <= .475 and y >= .425))
+        if (is_slit(y))
             continue;
         int j = (.49 - h) / h; // is this correct?
         while (j_to_x(j) <= .51){
@@ -167,7 +189,6 @@ arma::sp_mat CrackSystem::initialize_V_double_slit(double v_0){
             j++;
         }
     }
-    // V.print();
     return V;
 }
 

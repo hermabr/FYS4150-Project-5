@@ -2,6 +2,10 @@
 
 #include <armadillo>
 
+enum struct slits{
+    one, two, three
+};
+
 // TODO: Rename class name
 class CrackSystem {
     public:
@@ -26,7 +30,7 @@ class CrackSystem {
          * @param v_0 
          * @return arma::sp_mat 
          */
-        arma::sp_mat initialize_V_double_slit(double v_0);
+        arma::sp_mat initialize_V(double v_0, slits slits);
         /**
          * @brief Probability at grid point (i, j).
          * Calculated as |U(i, j)|²
