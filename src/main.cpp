@@ -56,7 +56,7 @@ Config parse_config(string filename) {
 int main() {
     Config config = parse_config("config.in");
     cerr << "Using config "; config.print();
-    CrackSystem cs(config.h, config.dt, config.T, config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y, config.v_0);
+    // CrackSystem cs(config.h, config.dt, config.T, config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y, config.v_0);
 
     return 0;
 }

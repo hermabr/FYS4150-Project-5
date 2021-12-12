@@ -26,6 +26,9 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
     V = initialize_V_double_slit(v_0);
     initialize_A_B();
     u = initialize_u(x_c, y_c, sigma_x, sigma_y, p_x, p_y);
+    u.print();
+    u.save("output/data/u.bin");
+    exit(69);
     cout << setprecision(15);
     cout << "total probability after initialization: " << total_probability() << endl;
     
@@ -41,7 +44,7 @@ CrackSystem::CrackSystem(double h, double dt, double T, double x_c, double y_c, 
         }
         cout << "total probability after " << t <<" step(s): " << total_probability() << endl;
     }
-    U.save("UBER.bin");
+    U.save("output/data/UBER.bin");
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
