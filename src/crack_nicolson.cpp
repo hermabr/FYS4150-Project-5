@@ -33,19 +33,6 @@ CrackSystem::CrackSystem(Config config, slits slits) :  h(config.h), dt(config.d
     cout << scientific << setprecision(15);
     cout << "deviation from 1 of total probability after initialization: " << 1 - total_probability() << endl;
     
-    // TODO: CHANGE THIS PLZ
-    int timesteps = (int) (T / dt);
-
-    arma::cx_mat U = arma::cx_mat(timesteps, M_star_square);
-    // TODO: Make sure we have correct time steps 
-    for (int t = 1; t <= timesteps; t ++){
-        u = solve_for_u_next(u);
-        for (int i = 0; i < M_star_square; i ++){
-            U(t - 1, i) = u(i);
-        }
-        cout << "deviation from 1 of total probability after " << t <<" step(s): " << 1 - total_probability() << endl;
-    }
-    U.save("output/data/UBER.bin");
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -132,7 +119,7 @@ arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
 
 arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
     arma::cx_vec u(M_star_square);
-    cd s = 0;
+    double s = 0;
     for (int i = 0; i < M_star; i++){
         double y = i_to_y(i);
         for (int j = 0; j < M_star; j++){
@@ -203,4 +190,20 @@ double CrackSystem::total_probability(){
         }
             
     return p;
+}
+
+void CrackSystem::simulate(){
+        // TODO: CHANGE THIS PLZ
+    int timesteps = (int) (T / dt);
+
+    arma::cx_mat U = arma::cx_mat(timesteps, M_star_square);
+    // TODO: Make sure we have correct time steps 
+    for (int t = 1; t <= timesteps; t ++){
+        u = solve_for_u_next(u);
+        for (int i = 0; i < M_star_square; i ++){
+            U(t - 1, i) = u(i);
+        }
+        cout << "deviation from 1 of total probability after " << t <<" step(s): " << 1 - total_probability() << endl;
+    }
+    U.save("output/data/UBER.bin");
 }

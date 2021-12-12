@@ -10,6 +10,7 @@ enum struct slits{
 class CrackSystem {
     public:
         CrackSystem(Config config, slits slits);
+        void simulate();
     private:
         // void initialize_A_B(int M, arma::cx_mat & A, arma::cx_mat & B, double dt, double h, arma::cx_mat v);
         int ij_to_k(int i, int j);

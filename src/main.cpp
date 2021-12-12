@@ -57,6 +57,7 @@ int main() {
     Config config = parse_config("config.in");
     cerr << "Using config "; config.print();
     CrackSystem cs(config, slits::two);
+    cs.simulate();
 
     return 0;
 }
