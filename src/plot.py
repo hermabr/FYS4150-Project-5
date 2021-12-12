@@ -121,23 +121,24 @@ class Plotter:
             )
 
 
+def detect(filename):
+    U = pa.cx_mat()
+    U.load(filename, pa.arma_binary)
+    U = np.array(U)
+    U_w_h = int(np.sqrt(U.shape[1]))
+    U.resize(U.shape[0], U_w_h, U_w_h)
+    U = U.transpose((0, 2, 1))
+    x = int(U_w_h * 0.8)
+    probabilities = np.real(U[-1, :, x]) ** 2 + np.imag(U[-1, :, x]) ** 2
+    probabilities /= np.sum(probabilities)
+    y = np.linspace(0, 1, len(probabilities))
+    plt.plot(y, probabilities)
+    plt.show()
+
+
 if __name__ == "__main__":
     # TODO: Do we want to run the c++ code from python?
-    parser = argparse.ArgumentParser(
-        description="To run the python plotting and the c++ simulation"
-    )
-    parser.add_argument(
-        "-s",
-        "--states",
-        help="To get information about different states",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-p",
-        "--plot",
-        help="To generate plots",
-        action="store_true",
-    )
+    parser = argparse.ArgumentParser(description="To run the python plotting")
     #  parser.add_argument(
     #      "-an",
     #      "--analytical",
@@ -156,6 +157,14 @@ if __name__ == "__main__":
     #      help="Reproduce the experiment as done in the report, using the same seed",
     #      action="store_true",
     #  )
+
+    parser.add_argument(
+        "-d",
+        "--detect",
+        help="Detect and plot at x=0.8 at the end of the simulation",
+        action="store_true",
+    )
+
     parser.add_argument(
         "-a",
         "--all",
@@ -163,7 +172,9 @@ if __name__ == "__main__":
         action="store_true",
     )
     args = parser.parse_args()
-    if args.plot or args.all or True:
+    if args.all:
         plot = Plotter("output/data/double_slit_dt_0.000025.bin")
         plot.make_time_plots()
         #  plot.create_animation(show=True, save=False)
+    if args.detect or args.all:
+        detect("output/data/UBER.bin")
