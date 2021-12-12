@@ -11,20 +11,19 @@ class Plotter:
     # config
     fontsize = 12
     t_min = 0
-    dt = 1
-    x_min, x_max = 0, 5
-    y_min, y_max = 0, 5
+    x_min, x_max = 0, 1
+    y_min, y_max = 0, 1
 
     def __init__(self, filename):
-        print("dt is not set correctly:((")
-
         self.filename = filename
+        self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
 
         U = pa.cx_mat()
         U.load(self.filename, pa.arma_binary)
         U = np.array(U)
         U_w_h = int(np.sqrt(U.shape[1]))
         U.resize(U.shape[0], U_w_h, U_w_h)
+        U = U.transpose((0, 2, 1))
 
         self.probabilities = np.real(U) ** 2 + np.imag(U) ** 2
 
@@ -140,6 +139,6 @@ if __name__ == "__main__":
         action="store_true",
     )
     args = parser.parse_args()
-    if args.plot or args.all:
-        plot = Plotter("output/data/double_slit.bin")
+    if args.plot or args.all or True:
+        plot = Plotter("output/data/double_slit_dt_0.000025.bin")
         plot.create_animation()
