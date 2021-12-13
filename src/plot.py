@@ -4,14 +4,11 @@ import matplotlib
 import tikzplotlib
 import numpy as np
 import pyarma as pa
-<<<<<<< HEAD
 import os
 
 import matplotlib
-=======
 import seaborn as sns
 from enum import Enum
->>>>>>> 55543811878e0ea8111923b9bfe27a9e9895db82
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -35,22 +32,12 @@ class Plotter:
         self.filename = filename
         self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
 
-<<<<<<< HEAD
-        U = pa.cx_mat()
-        U.load(self.filename, pa.arma_binary)
-        U = np.array(U)
-        U_w_h = int(np.sqrt(U.shape[1]))
-        U.resize(U.shape[0], U_w_h, U_w_h)
-        U = U.transpose((0, 2, 1))
-        self.U = U
-=======
         self.U = pa.cx_mat()
         self.U.load(self.filename, pa.arma_binary)
         self.U = np.array(self.U)
         U_w_h = int(np.sqrt(self.U.shape[1]))
         self.U.resize(self.U.shape[0], U_w_h, U_w_h)
         self.U = self.U.transpose((0, 2, 1))
->>>>>>> 55543811878e0ea8111923b9bfe27a9e9895db82
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
 
@@ -182,7 +169,6 @@ class Plotter:
                 dpi=300,
             )
 
-<<<<<<< HEAD
     def detect(self):
         U_w_h = self.U.shape[1]
         x = int(U_w_h * 0.8)
@@ -193,7 +179,6 @@ class Plotter:
         plt.xlabel("x")
         plt.plot(y, detection)
         plt.show()
-=======
     def tweak_tikz_plots(self, filename):
         """Tweaks the tikz plots to make them look better
 
@@ -234,29 +219,11 @@ class Plotter:
         plt.close()
 
 
-def detect(filename):
-    U = pa.cx_mat()
-    U.load(filename, pa.arma_binary)
-    U = np.array(U)
-    U_w_h = int(np.sqrt(U.shape[1]))
-    U.resize(U.shape[0], U_w_h, U_w_h)
-    U = U.transpose((0, 2, 1))
-    x = int(U_w_h * 0.8)
-    probabilities = np.real(U[-1, :, x]) ** 2 + np.imag(U[-1, :, x]) ** 2
-    probabilities /= np.sum(probabilities)
-    y = np.linspace(0, 1, len(probabilities))
-    plt.plot(y, probabilities)
-    plt.show()
->>>>>>> 55543811878e0ea8111923b9bfe27a9e9895db82
-
 
 if __name__ == "__main__":
     # TODO: Do we want to run the c++ code from python?
     parser = argparse.ArgumentParser(description="To run the python plotting")
 
-<<<<<<< HEAD
-
-=======
     parser.add_argument(
         "-f",
         "--filename",
@@ -281,20 +248,11 @@ if __name__ == "__main__":
     #      help="Reproduce the experiment as done in the report, using the same seed",
     #      action="store_true",
     #  )
->>>>>>> 55543811878e0ea8111923b9bfe27a9e9895db82
     parser.add_argument(
         "-d",
         "--detect",
         help="Detect and plot at x=0.8 at the end of the simulation. Include filename",
         action="store_true",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--filename",
-        help="filename of input",
-        type=str,
-        default="output/data/*"
     )
 
     parser.add_argument(
@@ -306,7 +264,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-<<<<<<< HEAD
     filenames = [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])] if args.filename[-1] == "*" else [args.filename]
 
     if args.all:
@@ -317,13 +274,3 @@ if __name__ == "__main__":
             plot.make_time_plots()
             plot.create_animation(show=True, save=False)
 
-=======
-    #  if not any(vars(args).values()):
-    #      parser.print_help()
-    if args.all or True:
-        plot = Plotter("output/data/double_slit_dt_0.000025.bin")
-        plot.make_time_plots()
-        plot.create_animation(show=True, save=False)
-    if args.detect or args.all:
-        detect("output/data/UBER.bin")
->>>>>>> 55543811878e0ea8111923b9bfe27a9e9895db82
