@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pyarma as pa
+import os
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -24,6 +25,7 @@ class Plotter:
         U_w_h = int(np.sqrt(U.shape[1]))
         U.resize(U.shape[0], U_w_h, U_w_h)
         U = U.transpose((0, 2, 1))
+        self.U = U
 
         self.probabilities = np.real(U) ** 2 + np.imag(U) ** 2
 
@@ -120,61 +122,54 @@ class Plotter:
                 dpi=300,
             )
 
-
-def detect(filename):
-    U = pa.cx_mat()
-    U.load(filename, pa.arma_binary)
-    U = np.array(U)
-    U_w_h = int(np.sqrt(U.shape[1]))
-    U.resize(U.shape[0], U_w_h, U_w_h)
-    U = U.transpose((0, 2, 1))
-    x = int(U_w_h * 0.8)
-    probabilities = np.real(U[-1, :, x]) ** 2 + np.imag(U[-1, :, x]) ** 2
-    probabilities /= np.sum(probabilities)
-    y = np.linspace(0, 1, len(probabilities))
-    plt.plot(y, probabilities)
-    plt.show()
+    def detect(self):
+        U_w_h = self.U.shape[1]
+        x = int(U_w_h * 0.8)
+        detection = self.probabilities[-1, :, x].copy()
+        detection /= np.sum(detection)
+        y = np.linspace(0, 1, len(detection))
+        plt.ylabel(f"$p(y | x=0.8; t={(len(self.U) - 1) * self.dt})$")
+        plt.xlabel("x")
+        plt.plot(y, detection)
+        plt.show()
 
 
 if __name__ == "__main__":
     # TODO: Do we want to run the c++ code from python?
     parser = argparse.ArgumentParser(description="To run the python plotting")
-    #  parser.add_argument(
-    #      "-an",
-    #      "--analytical",
-    #      help="To generate analytical values",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-z",
-    #      "--zoom",
-    #      help="Find maximum values and zoom",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-r",
-    #      "--reproduce",
-    #      help="Reproduce the experiment as done in the report, using the same seed",
-    #      action="store_true",
-    #  )
+
 
     parser.add_argument(
         "-d",
         "--detect",
-        help="Detect and plot at x=0.8 at the end of the simulation",
+        help="Detect and plot at x=0.8 at the end of the simulation. Include filename",
         action="store_true",
+    )
+
+    parser.add_argument(
+        "-f",
+        "--filename",
+        help="filename of input",
+        type=str,
+        default="output/data/*"
     )
 
     parser.add_argument(
         "-a",
         "--all",
         help="To run everything",
-        action="store_true",
+        action="store_true"
     )
+
     args = parser.parse_args()
+
+    filenames = [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])] if args.filename[-1] == "*" else [args.filename]
+
     if args.all:
-        plot = Plotter("output/data/double_slit_dt_0.000025.bin")
-        plot.make_time_plots()
-        #  plot.create_animation(show=True, save=False)
-    if args.detect or args.all:
-        detect("output/data/UBER.bin")
+        for filename in filenames:
+            print(filename)
+            plot = Plotter(filename)
+            plot.detect()
+            plot.make_time_plots()
+            plot.create_animation(show=True, save=False)
+

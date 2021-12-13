@@ -53,11 +53,23 @@ Config parse_config(string filename) {
     return config;
 }
 
+string config_to_filename(Config config, Slits slits){
+    string s = "output/data/";
+    switch(slits){
+        case Slits::one: s += "simple"; break;
+        case Slits::two: s += "double"; break;
+        case Slits::three: s += "triple"; break;
+    }
+    s += "_slit_dt=" + to_string(config.dt) + ".bin";
+    return s;
+}
+
 int main() {
     Config config = parse_config("config.in");
     cerr << "Using config "; config.print();
-    CrackSystem cs(config, slits::two);
-    cs.simulate();
+    Slits slits = Slits::two;
+    CrackSystem cs(config, slits);
+    cs.simulate(config_to_filename(config, slits));
 
     return 0;
 }
