@@ -1,3 +1,4 @@
+Plotting time plots for output/data/double_slit_dt_0.000025.bin
 \begin{figure}
     \centering
     \input{Plots/double_slit_dt_0.000025_t0.000e+00_PlotType.PROBABILITY.tex}

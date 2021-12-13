@@ -170,18 +170,20 @@ class Plotter:
                 dpi=300,
             )
 
-    def detect(self):
+    def detect(self, t=0.002):
         U_w_h = self.U.shape[1]
         x = int(U_w_h * 0.8)
-        detection = self.probabilities[-1, :, x].copy()
+        detection = self.probabilities[int(t / self.dt), :, x].copy()
         detection /= np.sum(detection)
         y = np.linspace(0, 1, len(detection))
-        plt.ylabel(f"$p(y | x=0.8; t={(len(self.U) - 1) * self.dt})$")
+        plt.ylabel(f"$p(y | x=0.8; t={t})$")
         plt.xlabel("x")
         plt.plot(y, detection)
+        plt.title("1-d probability distribution double slit")
+        self.save_tikz("output/plots/heyutherocksteadycrew.tex", heat_plot=False)
         plt.show()
 
-    def tweak_tikz_plots(self, filename):
+    def tweak_tikz_plots(self, filename, heat_plot):
         """Tweaks the tikz plots to make them look better
 
         Parameters
@@ -210,14 +212,19 @@ class Plotter:
                 #      f.write(line[:-1] + "[scale=0.80]" + "\n")
                 elif "begin{axis}[" in line:
                     f.write(line)
-                    f.write("width=7cm,\n")
+                    if heat_plot:
+                        f.write("width=7cm,\n")
+                    else:
+                        f.write("scaled y ticks=false,\n")
                 elif "end{axis}" in line:
                     f.write(line)
                     should_write = False
+                elif "title=" in line:
+                    f.write(line.replace("{", "\\textbf{"))
                 else:
                     f.write(line)
 
-    def save_tikz(self, filename):
+    def save_tikz(self, filename, heat_plot=True):
         """Saves the plot as a tikz-tex file
 
         Parameters
@@ -228,7 +235,7 @@ class Plotter:
         #  plt.grid(True)
         #  tikzplotlib.clean_figure()
         tikzplotlib.save(filename)
-        self.tweak_tikz_plots(filename)
+        self.tweak_tikz_plots(filename, heat_plot)
         plt.close()
 
 
@@ -276,7 +283,6 @@ if __name__ == "__main__":
         parser.print_help()
         exit()
 
-    print(f"Running for files: {' '.join(filenames)}\n")
     if args.time_plots or args.all:
         for filename in filenames:
             print(f"Plotting time plots for {filename}")
