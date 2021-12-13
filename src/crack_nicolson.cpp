@@ -13,7 +13,7 @@ using namespace std::complex_literals;
 #define cmat arma::cx_mat
 
 // TODO: Rename hehe
-CrackSystem::CrackSystem(Config config, slits slits) :  h(config.h), dt(config.dt), T(config.T) {
+CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
     // TODO: Check that T/dt is a whole number?
 
@@ -26,7 +26,7 @@ CrackSystem::CrackSystem(Config config, slits slits) :  h(config.h), dt(config.d
     // TODO: DO SOMETHING WITH v
     cmat v = cmat(M, M);
     v.fill(cd(1, 0));
-    V = initialize_V(config.v_0, slits);
+    V = initialize_V(config.v_0, Slits);
     initialize_A_B();
     u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
     u.save("output/data/u.bin");
@@ -137,19 +137,19 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
 }
 
 
-arma::sp_mat CrackSystem::initialize_V(double v_0, slits slits){ 
+arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){ 
     //arma::sp_mat V(M_star, M_star, arma::fill::zeros);
     arma::sp_mat V(M_star, M_star);
     arma::vec slit_tops;
 
     switch(slits) {
-        case slits::one: 
+        case Slits::one: 
             slit_tops = {.525};
             break;
-        case slits::two: 
+        case Slits::two: 
             slit_tops = {.575, .475};
             break;
-        case slits::three:
+        case Slits::three:
             slit_tops = {.625, .525, .425};
             break;
     };
@@ -191,18 +191,21 @@ double CrackSystem::total_probability(){
     return p;
 }
 
-void CrackSystem::simulate(){
+void CrackSystem::simulate(string outfile){
     // TODO: CHANGE THIS PLZ
     int timesteps = (int) (T / dt);
 
-    arma::cx_mat U = arma::cx_mat(timesteps, M_star_square);
-    // TODO: Make sure we have correct time steps 
+    arma::cx_mat U = arma::cx_mat(timesteps + 1, M_star_square);
+    for (int i = 0; i < M_star_square; i ++){
+            U(0, i) = u(i);
+    }
+    
     for (int t = 1; t <= timesteps; t ++){
         u = solve_for_u_next(u);
         for (int i = 0; i < M_star_square; i ++){
-            U(t - 1, i) = u(i);
+            U(t, i) = u(i);
         }
         cout << "deviation from 1 of total probability after " << t <<" step(s): " << 1 - total_probability() << endl;
     }
-    U.save("output/data/UBER.bin");
+    U.save(outfile);
 }

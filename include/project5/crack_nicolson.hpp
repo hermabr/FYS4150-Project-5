@@ -2,15 +2,15 @@
 
 #include <armadillo>
 
-enum struct slits{
+enum struct Slits{
     one, two, three
 };
 
 // TODO: Rename class name
 class CrackSystem {
     public:
-        CrackSystem(Config config, slits slits);
-        void simulate();
+        CrackSystem(Config config, Slits Slits);
+        void simulate(std::string outfile);
     private:
         // void initialize_A_B(int M, arma::cx_mat & A, arma::cx_mat & B, double dt, double h, arma::cx_mat v);
         int ij_to_k(int i, int j);
@@ -31,7 +31,7 @@ class CrackSystem {
          * @param v_0 
          * @return arma::sp_mat 
          */
-        arma::sp_mat initialize_V(double v_0, slits slits);
+        arma::sp_mat initialize_V(double v_0, Slits Slits);
         /**
          * @brief Probability at grid point (i, j).
          * Calculated as |U(i, j)|²

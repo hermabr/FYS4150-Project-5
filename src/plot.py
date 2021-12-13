@@ -4,6 +4,9 @@ import matplotlib
 import tikzplotlib
 import numpy as np
 import pyarma as pa
+import os
+
+import matplotlib
 import seaborn as sns
 from enum import Enum
 import matplotlib.pyplot as plt
@@ -167,6 +170,17 @@ class Plotter:
                 dpi=300,
             )
 
+    def detect(self):
+        U_w_h = self.U.shape[1]
+        x = int(U_w_h * 0.8)
+        detection = self.probabilities[-1, :, x].copy()
+        detection /= np.sum(detection)
+        y = np.linspace(0, 1, len(detection))
+        plt.ylabel(f"$p(y | x=0.8; t={(len(self.U) - 1) * self.dt})$")
+        plt.xlabel("x")
+        plt.plot(y, detection)
+        plt.show()
+
     def tweak_tikz_plots(self, filename):
         """Tweaks the tikz plots to make them look better
 
@@ -218,69 +232,63 @@ class Plotter:
         plt.close()
 
 
-def detect(filename):
-    U = pa.cx_mat()
-    U.load(filename, pa.arma_binary)
-    U = np.array(U)
-    U_w_h = int(np.sqrt(U.shape[1]))
-    U.resize(U.shape[0], U_w_h, U_w_h)
-    U = U.transpose((0, 2, 1))
-    x = int(U_w_h * 0.8)
-    probabilities = np.real(U[-1, :, x]) ** 2 + np.imag(U[-1, :, x]) ** 2
-    probabilities /= np.sum(probabilities)
-    y = np.linspace(0, 1, len(probabilities))
-    plt.plot(y, probabilities)
-    plt.show()
-
-
 if __name__ == "__main__":
     # TODO: Do we want to run the c++ code from python?
-    parser = argparse.ArgumentParser(description="To run the python plotting")
+    parser = argparse.ArgumentParser(description="For running the plotting")
 
+    # TODO: RUNNING ARGUMENTS DO BE LOOKIN KINDA SUS
     parser.add_argument(
         "-f",
         "--filename",
         type=str,
         help="The filename of the binary file to plot",
+        default="output/data/*",
     )
-    #  parser.add_argument(
-    #      "-an",
-    #      "--analytical",
-    #      help="To generate analytical values",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-z",
-    #      "--zoom",
-    #      help="Find maximum values and zoom",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-r",
-    #      "--reproduce",
-    #      help="Reproduce the experiment as done in the report, using the same seed",
-    #      action="store_true",
-    #  )
+    parser.add_argument(
+        "-t",
+        "--time_plots",
+        help="To plot the probablity and the real and imaginary parts of the wave function for different time steps",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-a",
+        "--animation",
+        help="To create an animation of probablity",
+        action="store_true",
+    )
     parser.add_argument(
         "-d",
         "--detect",
-        help="Detect and plot at x=0.8 at the end of the simulation",
+        help="Detect and plot at x=0.8 at the end of the simulation. Include filename",
         action="store_true",
     )
+    parser.add_argument("-all", "--all", help="To run everything", action="store_true")
 
-    parser.add_argument(
-        "-a",
-        "--all",
-        help="To run everything",
-        action="store_true",
-    )
     args = parser.parse_args()
 
-    #  if not any(vars(args).values()):
-    #      parser.print_help()
-    if args.all or True:
-        plot = Plotter("output/data/double_slit_dt_0.000025.bin")
-        plot.make_time_plots()
-        #  plot.create_animation(show=True, save=False)
+    filenames = (
+        [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])]
+        if args.filename[-1] == "*"
+        else [args.filename]
+    )
+
+    if not args.time_plots and not args.animation and not args.detect and not args.all:
+        parser.print_help()
+        exit()
+
+    print(f"Running for files: {' '.join(filenames)}\n")
+    if args.time_plots or args.all:
+        for filename in filenames:
+            print(f"Plotting time plots for {filename}")
+            plot = Plotter(filename)
+            plot.make_time_plots()
+    if args.animation or args.all:
+        for filename in filenames:
+            print(f"Creating animation for {filename}")
+            plot = Plotter(filename)
+            plot.create_animation()
     if args.detect or args.all:
-        detect("output/data/UBER.bin")
+        for filename in filenames:
+            print(f"Plotting detect for {filename}")
+            plot = Plotter(filename)
+            plot.detect()
