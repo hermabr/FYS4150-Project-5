@@ -59,11 +59,7 @@ class Plotter:
             frame_idx = int(frame_idx)
 
         plt.close()
-        #  self.fig = plt.figure()
-        #  self.ax = plt.gca()
         self.fig, self.ax = plt.subplots()
-        #  self.ax.grid(False)
-        #  self.ax.grid(False)
 
         if plot_type == PlotType.PROBABILITY:
             data = self.probabilities[frame_idx]
@@ -110,30 +106,39 @@ class Plotter:
         self.time_txt.set_text(f"t = {self.current_time(frame_idx):.3e}")
         return self.img
 
+    def latex_plot_name(self, filename, plot_type, t):
+        text = """\\begin{figure}\n    \\centering\n    """
+        caption = f"A plot of the "
+        title = ""
+        if plot_type == PlotType.PROBABILITY:
+            title = f"Probability distribution for t={t}"
+            caption += f"probability distribution of p(x,y;t)"
+        elif plot_type == PlotType.REAL:
+            title = f"Real part of the wavefunction for t={t}"
+            caption += f"real part of the wavefunction u(x,y;t)"
+        elif plot_type == PlotType.IMAGINARY:
+            title = f"Imaginary part of the wavefunction for t={t}"
+            caption += f"imaginary part of the wavefunction u(x,y;t)"
+        #  caption += rf" for a system with $h=0.005$, $\Delta t=2.5\cdot 10^{{-5}}$, $T=0.002$, $x_c=0.25$, $\sigma_x=0.05$, $p_x=200$, $y_c=0.5$, $\sigma_y=0.2$, $p_y=0$, $v_0=1\cdot 10^{{10}}$ for a double slit setup"
+        caption += rf" for t={t} using setup 1"
+        #  text += f"\\text{{{title}}}\\par\\medskip\n    "
+        text += f"\\input{{{filename.replace('output/plots/', 'Plots/')}}}\n    "
+        text += f"\\caption{{{caption}}} "
+        text += f"\\label{{fig:{str(plot_type)}_{t}}}\n\\end{{figure}}\n"
+        print(text)
+
+        return title
+
     def make_time_plots(self):
         for t in [0, 0.001, 0.002]:
-            for plot_type in [PlotType.REAL, PlotType.IMAGINARY, PlotType.PROBABILITY]:
+            for plot_type in [PlotType.PROBABILITY, PlotType.REAL, PlotType.IMAGINARY]:
                 self.make_frame_plot(
                     t / self.dt, plot_type=plot_type, is_animation=False
                 )
 
                 filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
-
-                text = """\\begin{figure}\n    \\centering\n    """
-                title = ""
-                if plot_type == PlotType.PROBABILITY:
-                    title = f"Probability distribution for p(x,y,t={t})"
-                elif plot_type == PlotType.REAL:
-                    title = f"Real part of the wavefunction u(x,y,t={t})"
-                elif plot_type == PlotType.IMAGINARY:
-                    title = f"Imaginary part of the wavefunction u(x,y,t={t})"
-                text += f"\\text{{{title}}}\\par\\medskip\n    "
-                text += (
-                    f"\\input{{{filename.replace('output/plots/', 'Plots/')}}}\n    "
-                )
-                text += "\\caption{An example plot} \\label{fig:example_plot}\n\\end{figure}\n"
-                print(text)
-
+                title = self.latex_plot_name(filename, plot_type, t)
+                plt.title(title)
                 self.save_tikz(filename)
 
     def create_animation(self, show=False, save=True):
