@@ -1,0 +1,63 @@
+\begin{figure}
+    \centering
+    \text{Real part of the wavefunction u(x,y,t=0)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t0.000e+00_PlotType.REAL.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Imaginary part of the wavefunction u(x,y,t=0)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t0.000e+00_PlotType.IMAGINARY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Probability distribution for p(x,y,t=0)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t0.000e+00_PlotType.PROBABILITY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Real part of the wavefunction u(x,y,t=0.001)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t1.000e-03_PlotType.REAL.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Imaginary part of the wavefunction u(x,y,t=0.001)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t1.000e-03_PlotType.IMAGINARY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Probability distribution for p(x,y,t=0.001)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t1.000e-03_PlotType.PROBABILITY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Real part of the wavefunction u(x,y,t=0.002)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t2.000e-03_PlotType.REAL.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Imaginary part of the wavefunction u(x,y,t=0.002)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t2.000e-03_PlotType.IMAGINARY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \text{Probability distribution for p(x,y,t=0.002)}\par\medskip
+    \input{Plots/double_slit_dt_0.000025_t2.000e-03_PlotType.PROBABILITY.tex}
+    \caption{An example plot} \label{fig:example_plot}
+\end{figure}
+

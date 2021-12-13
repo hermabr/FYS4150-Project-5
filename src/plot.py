@@ -8,6 +8,7 @@ import seaborn as sns
 from enum import Enum
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 sns.set_theme()
 
@@ -38,10 +39,10 @@ class Plotter:
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
 
-    def get_norm(self, frame_idx):
-        return matplotlib.cm.colors.Normalize(
-            vmin=0.0, vmax=np.max(self.probabilities[frame_idx])
-        )
+    def get_norm(self, frame_idx, data=None):
+        if data is None:
+            data = self.probabilities[frame_idx]
+        return matplotlib.cm.colors.Normalize(vmin=0.0, vmax=np.max(data))
 
     def current_time(self, frame_idx):
         return self.t_min + frame_idx * self.dt
@@ -50,7 +51,7 @@ class Plotter:
         self,
         frame_idx=0,
         plot_type: PlotType = PlotType.PROBABILITY,
-        time_label=True,
+        is_animation=True,
     ):
         if isinstance(frame_idx, float):
             if frame_idx != int(frame_idx):
@@ -58,47 +59,39 @@ class Plotter:
             frame_idx = int(frame_idx)
 
         plt.close()
-        self.fig = plt.figure()
-        self.ax = plt.gca()
+        #  self.fig = plt.figure()
+        #  self.ax = plt.gca()
+        self.fig, self.ax = plt.subplots()
+        #  self.ax.grid(False)
+        #  self.ax.grid(False)
 
         if plot_type == PlotType.PROBABILITY:
-            self.img = self.ax.imshow(
-                self.probabilities[frame_idx],
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "p(x,y,z)"
+            data = self.probabilities[frame_idx]
+            cbar_label = r"$p(x, y; t)$"
         elif plot_type == PlotType.REAL:
-            self.img = self.ax.imshow(
-                np.real(self.U[frame_idx]),
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "Re(U(x,y,z))"
+            data = np.real(self.U[frame_idx])
+            cbar_label = r"Re$(u(x, y; t))$"
         elif plot_type == PlotType.IMAGINARY:
-            self.img = self.ax.imshow(
-                np.imag(self.U[frame_idx]),
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "Im(U(x,y,z))"
+            data = np.imag(self.U[frame_idx])
+            cbar_label = r"Im$(u(x, y; t))$"
 
-        if time_label:
+        self.img = plt.imshow(
+            data,
+            cmap="viridis",
+            norm=self.get_norm(frame_idx, data),
+            extent=[self.x_min, self.x_max, self.y_min, self.y_max],
+        )
+
+        if is_animation:
             self.time_txt = plt.text(
                 0.95 * self.x_max,
                 0.95 * self.y_max,
-                #  f"t = {self.t_min:.3e}",
                 f"t = {self.current_time(frame_idx):.3e}",
                 color="white",
                 horizontalalignment="right",
                 verticalalignment="top",
                 fontsize=self.fontsize,
             )
-
-        #  self.time_txt.set_text("")
 
         # Axis labels
         plt.xlabel("x", fontsize=self.fontsize)
@@ -111,8 +104,6 @@ class Plotter:
         cbar.set_label(cbar_label, fontsize=self.fontsize)
         cbar.ax.tick_params(labelsize=self.fontsize)
 
-        # Add a text element showing the time
-
     def animation(self, frame_idx):
         self.img.set_norm(self.get_norm(frame_idx))
         self.img.set_data(self.probabilities[frame_idx])
@@ -121,23 +112,29 @@ class Plotter:
 
     def make_time_plots(self):
         for t in [0, 0.001, 0.002]:
-            self.make_frame_plot(
-                t / self.dt, plot_type=PlotType.PROBABILITY, time_label=False
-            )
-            plt.title("AAA")  # TODO: Title
-            self.save_tikz(
-                f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}.tex"
-            )
-            exit()
-            #  plt.show()
+            for plot_type in [PlotType.REAL, PlotType.IMAGINARY, PlotType.PROBABILITY]:
+                self.make_frame_plot(
+                    t / self.dt, plot_type=plot_type, is_animation=False
+                )
 
-        self.make_frame_plot(0.002 / self.dt, PlotType.REAL)
-        plt.title("AAA")
-        plt.show()
+                filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
 
-        self.make_frame_plot(0.002 / self.dt, PlotType.IMAGINARY)
-        plt.title("AAA")
-        plt.show()
+                text = """\\begin{figure}\n    \\centering\n    """
+                title = ""
+                if plot_type == PlotType.PROBABILITY:
+                    title = f"Probability distribution for p(x,y,t={t})"
+                elif plot_type == PlotType.REAL:
+                    title = f"Real part of the wavefunction u(x,y,t={t})"
+                elif plot_type == PlotType.IMAGINARY:
+                    title = f"Imaginary part of the wavefunction u(x,y,t={t})"
+                text += f"\\text{{{title}}}\\par\\medskip\n    "
+                text += (
+                    f"\\input{{{filename.replace('output/plots/', 'Plots/')}}}\n    "
+                )
+                text += "\\caption{An example plot} \\label{fig:example_plot}\n\\end{figure}\n"
+                print(text)
+
+                self.save_tikz(filename)
 
     def create_animation(self, show=False, save=True):
         self.make_frame_plot()
@@ -153,7 +150,6 @@ class Plotter:
         )
 
         if show:
-            # Run the animation!
             plt.show()
 
         if save:
@@ -178,7 +174,10 @@ class Plotter:
             lines = f.readlines()
 
         with open(filename, "w") as f:
+            should_write = True
             for line in lines:
+                if not should_write and "end{tikzpicture}" not in line:
+                    continue
                 if ".png" in line:
                     line = re.sub(
                         r"{(.*\.png)}",
@@ -188,6 +187,14 @@ class Plotter:
                     f.write(line)
                 elif "majorticks" in line:
                     f.write(line.replace("false", "true"))
+                #  elif "begin{tikzpicture}" in line:
+                #      f.write(line[:-1] + "[scale=0.80]" + "\n")
+                elif "begin{axis}[" in line:
+                    f.write(line)
+                    f.write("width=7cm,\n")
+                elif "end{axis}" in line:
+                    f.write(line)
+                    should_write = False
                 else:
                     f.write(line)
 
@@ -269,6 +276,6 @@ if __name__ == "__main__":
     if args.all or True:
         plot = Plotter("output/data/double_slit_dt_0.000025.bin")
         plot.make_time_plots()
-        plot.create_animation(show=True, save=False)
+        #  plot.create_animation(show=True, save=False)
     if args.detect or args.all:
         detect("output/data/UBER.bin")
