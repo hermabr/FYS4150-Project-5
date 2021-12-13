@@ -229,6 +229,7 @@ if __name__ == "__main__":
         "--filename",
         type=str,
         help="The filename of the binary file to plot",
+        default="output/data/*"
     )
     #  parser.add_argument(
     #      "-an",
