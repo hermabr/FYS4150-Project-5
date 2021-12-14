@@ -47,6 +47,9 @@ release: dirs
 dirs:
 	@mkdir -p $(dir $(OBJECTS))
 	@mkdir -p $(BIN_PATH)
+	@mkdir -p output/data
+	@mkdir -p output/plots
+	@mkdir -p output/animations
 
 plots:
 	@python src/run.py -a
