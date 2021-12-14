@@ -11,6 +11,7 @@ import seaborn as sns
 from enum import Enum
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 sns.set_theme()
 
@@ -47,14 +48,14 @@ class Plotter:
         self.U = self.U.transpose((0, 2, 1))
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
-
-    def get_norm(self, frame_idx):
+        
+    def get_norm(self, frame_idx, data=None):
         """
         Get norm for rescaling the colormap
         """
-        return matplotlib.cm.colors.Normalize(
-            vmin=0.0, vmax=np.max(self.probabilities[frame_idx])
-        )
+        if data is None:
+            data = self.probabilities[frame_idx]
+        return matplotlib.cm.colors.Normalize(vmin=0.0, vmax=np.max(data))
 
     def current_time(self, frame_idx):
         """
@@ -66,7 +67,7 @@ class Plotter:
         self,
         frame_idx=0,
         plot_type: PlotType = PlotType.PROBABILITY,
-        time_label=True,
+        is_animation=True,
     ):
         """
         Plot the frame at frame_idx in U. Specify plot_type, default is PROBABILITY, 
@@ -81,47 +82,35 @@ class Plotter:
             frame_idx = int(frame_idx)
 
         plt.close()
-        self.fig = plt.figure()
-        self.ax = plt.gca()
+        self.fig, self.ax = plt.subplots()
 
         if plot_type == PlotType.PROBABILITY:
-            self.img = self.ax.imshow(
-                self.probabilities[frame_idx],
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "p(x,y,z)"
+            data = self.probabilities[frame_idx]
+            cbar_label = r"$p(x, y; t)$"
         elif plot_type == PlotType.REAL:
-            self.img = self.ax.imshow(
-                np.real(self.U[frame_idx]),
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "Re(U(x,y,z))"
+            data = np.real(self.U[frame_idx])
+            cbar_label = r"Re$(u(x, y; t))$"
         elif plot_type == PlotType.IMAGINARY:
-            self.img = self.ax.imshow(
-                np.imag(self.U[frame_idx]),
-                cmap=plt.get_cmap("viridis"),
-                extent=[self.x_min, self.x_max, self.y_min, self.y_max],
-                norm=self.get_norm(frame_idx),
-            )
-            cbar_label = "Im(U(x,y,z))"
+            data = np.imag(self.U[frame_idx])
+            cbar_label = r"Im$(u(x, y; t))$"
 
-        if time_label:
+        self.img = plt.imshow(
+            data,
+            cmap="viridis",
+            norm=self.get_norm(frame_idx, data),
+            extent=[self.x_min, self.x_max, self.y_min, self.y_max],
+        )
+
+        if is_animation:
             self.time_txt = plt.text(
                 0.95 * self.x_max,
                 0.95 * self.y_max,
-                #  f"t = {self.t_min:.3e}",
                 f"t = {self.current_time(frame_idx):.3e}",
                 color="white",
                 horizontalalignment="right",
                 verticalalignment="top",
                 fontsize=self.fontsize,
             )
-
-        #  self.time_txt.set_text("")
 
         # Axis labels
         plt.xlabel("x", fontsize=self.fontsize)
@@ -134,8 +123,6 @@ class Plotter:
         cbar.set_label(cbar_label, fontsize=self.fontsize)
         cbar.ax.tick_params(labelsize=self.fontsize)
 
-        # Add a text element showing the time
-
     def animation(self, frame_idx):
         """
         Return the animation
@@ -145,28 +132,43 @@ class Plotter:
         self.time_txt.set_text(f"t = {self.current_time(frame_idx):.3e}")
         return self.img
 
+    def latex_plot_name(self, filename, plot_type, t):
+        text = """\\begin{figure}\n    \\centering\n    """
+        caption = f"A plot of the "
+        title = ""
+        if plot_type == PlotType.PROBABILITY:
+            title = f"Probability distribution for t={t}"
+            caption += f"probability distribution of p(x,y;t)"
+        elif plot_type == PlotType.REAL:
+            title = f"Real part of the wavefunction for t={t}"
+            caption += f"real part of the wavefunction u(x,y;t)"
+        elif plot_type == PlotType.IMAGINARY:
+            title = f"Imaginary part of the wavefunction for t={t}"
+            caption += f"imaginary part of the wavefunction u(x,y;t)"
+        #  caption += rf" for a system with $h=0.005$, $\Delta t=2.5\cdot 10^{{-5}}$, $T=0.002$, $x_c=0.25$, $\sigma_x=0.05$, $p_x=200$, $y_c=0.5$, $\sigma_y=0.2$, $p_y=0$, $v_0=1\cdot 10^{{10}}$ for a double slit setup"
+        caption += rf" for t={t} using setup 1"
+        #  text += f"\\text{{{title}}}\\par\\medskip\n    "
+        text += f"\\input{{{filename.replace('output/plots/', 'Plots/')}}}\n    "
+        text += f"\\caption{{{caption}}} "
+        text += f"\\label{{fig:{str(plot_type)}_{t}}}\n\\end{{figure}}\n"
+        print(text)
+
+        return title
+
     def make_time_plots(self):
         """
         Produce time plots for the times t=0, t=0.01 and t=0.002
         """
         for t in [0, 0.001, 0.002]:
-            self.make_frame_plot(
-                t / self.dt, plot_type=PlotType.PROBABILITY, time_label=False
-            )
-            plt.title("AAA")  # TODO: Title
-            self.save_tikz(
-                f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}.tex"
-            )
-            exit()
-            #  plt.show()
+            for plot_type in [PlotType.PROBABILITY, PlotType.REAL, PlotType.IMAGINARY]:
+                self.make_frame_plot(
+                    t / self.dt, plot_type=plot_type, is_animation=False
+                )
 
-        self.make_frame_plot(0.002 / self.dt, PlotType.REAL)
-        plt.title("AAA")
-        plt.show()
-
-        self.make_frame_plot(0.002 / self.dt, PlotType.IMAGINARY)
-        plt.title("AAA")
-        plt.show()
+                filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
+                title = self.latex_plot_name(filename, plot_type, t)
+                plt.title(title)
+                self.save_tikz(filename)
 
     def create_animation(self, show=False, save=True):
         self.make_frame_plot()
@@ -182,7 +184,6 @@ class Plotter:
         )
 
         if show:
-            # Run the animation!
             plt.show()
 
         if save:
@@ -195,17 +196,20 @@ class Plotter:
                 dpi=300,
             )
 
-    def detect(self):
+    def detect(self, t=0.002):
         U_w_h = self.U.shape[1]
         x = int(U_w_h * 0.8)
-        detection = self.probabilities[-1, :, x].copy()
+        detection = self.probabilities[int(t / self.dt), :, x].copy()
         detection /= np.sum(detection)
         y = np.linspace(0, 1, len(detection))
-        plt.ylabel(f"$p(y | x=0.8; t={(len(self.U) - 1) * self.dt})$")
+        plt.ylabel(f"$p(y | x=0.8; t={t})$")
         plt.xlabel("x")
         plt.plot(y, detection)
+        plt.title("1-d probability distribution double slit")
+        self.save_tikz("output/plots/heyutherocksteadycrew.tex", heat_plot=False)
         plt.show()
-    def tweak_tikz_plots(self, filename):
+
+    def tweak_tikz_plots(self, filename, heat_plot):
         """Tweaks the tikz plots to make them look better
 
         Parameters
@@ -217,7 +221,10 @@ class Plotter:
             lines = f.readlines()
 
         with open(filename, "w") as f:
+            should_write = True
             for line in lines:
+                if not should_write and "end{tikzpicture}" not in line:
+                    continue
                 if ".png" in line:
                     line = re.sub(
                         r"{(.*\.png)}",
@@ -227,10 +234,23 @@ class Plotter:
                     f.write(line)
                 elif "majorticks" in line:
                     f.write(line.replace("false", "true"))
+                #  elif "begin{tikzpicture}" in line:
+                #      f.write(line[:-1] + "[scale=0.80]" + "\n")
+                elif "begin{axis}[" in line:
+                    f.write(line)
+                    if heat_plot:
+                        f.write("width=7cm,\n")
+                    else:
+                        f.write("scaled y ticks=false,\n")
+                elif "end{axis}" in line:
+                    f.write(line)
+                    should_write = False
+                elif "title=" in line:
+                    f.write(line.replace("{", "\\textbf{"))
                 else:
                     f.write(line)
 
-    def save_tikz(self, filename):
+    def save_tikz(self, filename, heat_plot=True):
         """Saves the plot as a tikz-tex file
 
         Parameters
@@ -241,63 +261,66 @@ class Plotter:
         #  plt.grid(True)
         #  tikzplotlib.clean_figure()
         tikzplotlib.save(filename)
-        self.tweak_tikz_plots(filename)
+        self.tweak_tikz_plots(filename, heat_plot)
         plt.close()
-
 
 
 if __name__ == "__main__":
     # TODO: Do we want to run the c++ code from python?
-    parser = argparse.ArgumentParser(description="To run the python plotting")
+    parser = argparse.ArgumentParser(description="For running the plotting")
 
+    # TODO: RUNNING ARGUMENTS DO BE LOOKIN KINDA SUS
     parser.add_argument(
         "-f",
         "--filename",
         type=str,
         help="The filename of the binary file to plot",
-        default="output/data/*"
+        default="output/data/*",
     )
-    #  parser.add_argument(
-    #      "-an",
-    #      "--analytical",
-    #      help="To generate analytical values",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-z",
-    #      "--zoom",
-    #      help="Find maximum values and zoom",
-    #      action="store_true",
-    #  )
-    #  parser.add_argument(
-    #      "-r",
-    #      "--reproduce",
-    #      help="Reproduce the experiment as done in the report, using the same seed",
-    #      action="store_true",
-    #  )
+    parser.add_argument(
+        "-t",
+        "--time_plots",
+        help="To plot the probablity and the real and imaginary parts of the wave function for different time steps",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-a",
+        "--animation",
+        help="To create an animation of probablity",
+        action="store_true",
+    )
     parser.add_argument(
         "-d",
         "--detect",
         help="Detect and plot at x=0.8 at the end of the simulation. Include filename",
         action="store_true",
     )
-
-    parser.add_argument(
-        "-a",
-        "--all",
-        help="To run everything",
-        action="store_true"
-    )
+    parser.add_argument("-all", "--all", help="To run everything", action="store_true")
 
     args = parser.parse_args()
 
-    filenames = [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])] if args.filename[-1] == "*" else [args.filename]
+    filenames = (
+        [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])]
+        if args.filename[-1] == "*"
+        else [args.filename]
+    )
 
-    if args.all:
+    if not args.time_plots and not args.animation and not args.detect and not args.all:
+        parser.print_help()
+        exit()
+
+    if args.time_plots or args.all:
         for filename in filenames:
-            print(filename)
+            print(f"Plotting time plots for {filename}")
+            plot = Plotter(filename)
+            plot.make_time_plots()
+    if args.animation or args.all:
+        for filename in filenames:
+            print(f"Creating animation for {filename}")
+            plot = Plotter(filename)
+            plot.create_animation()
+    if args.detect or args.all:
+        for filename in filenames:
+            print(f"Plotting detect for {filename}")
             plot = Plotter(filename)
             plot.detect()
-            plot.make_time_plots()
-            plot.create_animation(show=True, save=False)
-
