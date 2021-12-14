@@ -29,7 +29,6 @@ CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.d
     V = initialize_V(config.v_0, Slits);
     initialize_A_B();
     u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
-    u.save("output/data/u.bin");
     cout << scientific << setprecision(15);
     cout << "deviation from 1 of total probability after initialization: " << 1 - total_probability() << endl;
 }
@@ -52,8 +51,6 @@ double CrackSystem::j_to_x(int j){
 
 
 
-// TODO: Possible to initialize the diagonal elements in one liners?
-// void CrackSystem::initialize_A_B(int M, cmat & A, cmat & B, double dt, double h, cmat v) {
 void CrackSystem::initialize_A_B() {
     A = arma::sp_cx_mat(M_star_square, M_star_square);
     B = arma::sp_cx_mat(M_star_square, M_star_square);
@@ -63,16 +60,6 @@ void CrackSystem::initialize_A_B() {
 
     cd r = 1i * dt / (2. * h * h);
 
-    // TODO: I assume this one is categorically better (except the fact that it doesn't work yet)
-    // for (int i = 0; i < N; i++) {
-    //     for (int j = 0; j < N; j++) {
-    //         int k = ij_to_k(i, j);
-    //
-    //         a(k) = 1. + 4. * r + 1i * dt / 2. * v_i_j;
-    //         b(k) = 1. - 4. * r - 1i * dt / 2. * v_i_j;
-    //     }
-    // }
-    
     for (int k = 0; k < M_star_square; k++) {
         int i = k / M_star;
         int j = k % M_star;
@@ -82,28 +69,28 @@ void CrackSystem::initialize_A_B() {
     }
 
     for (int k = 0; k < M_star_square; k++) {
-        int i = 1 + k / M_star;
-        int j = 1 + k % M_star;
+        int i = k / M_star;
+        int j = k % M_star;
 
         A(k, k) = a(k);
         B(k, k) = b(k);
 
-        if (i != 1) {
-            A(k, (i-2) * M_star + j - 1) = -r;
-            B(k, (i-2) * M_star + j - 1) = r;
+        if (i != 0) {
+            A(k, (i-1) * M_star + j) = -r;
+            B(k, (i-1) * M_star + j) = r;
         }
 
-        if (i != M_star) {
-            A(k, i * M_star + j - 1) = -r;
-            B(k, i * M_star + j - 1) = r;
+        if (i != M_star - 1) {
+            A(k, (i + 1) * M_star + j) = -r;
+            B(k, (i + 1) * M_star + j) = r;
         }
 
-        if (j != 1) {
+        if (j != 0) {
             A(k, k - 1) = -r;
             B(k, k - 1) = r;
         }
 
-        if (j != M_star) {
+        if (j != M_star - 1) {
             A(k, k + 1) = -r;
             B(k, k + 1) = r;
         }
@@ -157,7 +144,7 @@ arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){
     auto is_slit = [slit_tops](double y){
         float slit_width = .05;
         for (int i = 0; i < slit_tops.size(); i++){
-            if (y <= slit_tops(i) and y >= slit_tops(i) - slit_width) // is inclusive correct?
+            if (y <= slit_tops(i) and y > slit_tops(i) - slit_width) // is inclusive correct?
                 return true;
         }
         return false;
@@ -168,7 +155,7 @@ arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){
         if (is_slit(y))
             continue;
         int j = (.49 - h) / h; // is this correct?
-        while (j_to_x(j) <= .51){
+        while (j_to_x(j) < .51){
             V(i, j) = v_0;
             j++;
         }
@@ -199,13 +186,18 @@ void CrackSystem::simulate(string outfile){
     for (int i = 0; i < M_star_square; i ++){
             U(0, i) = u(i);
     }
+    double maximum_deviation = abs(1 - total_probability());
     
     for (int t = 1; t <= timesteps; t ++){
         u = solve_for_u_next(u);
         for (int i = 0; i < M_star_square; i ++){
             U(t, i) = u(i);
         }
-        cout << "deviation from 1 of total probability after " << t <<" step(s): " << 1 - total_probability() << endl;
+        double deviation = abs(1 - total_probability());
+        if (deviation > maximum_deviation)
+            maximum_deviation = deviation;
+        cout << "deviation from 1 of total probability after " << t <<" step(s): " << deviation << endl;
     }
+    cout << "Greatest deviation from 1: " << maximum_deviation << endl;
     U.save(outfile);
 }

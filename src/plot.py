@@ -1,6 +1,7 @@
 import re
 import argparse
 import matplotlib
+from matplotlib import animation
 import tikzplotlib
 import numpy as np
 import pyarma as pa
@@ -177,6 +178,9 @@ class Plotter:
                 self.save_tikz(filename)
 
     def create_animation(self, show=False, save=True):
+        """
+        Create animations. Specify if animations is to be shown and saved
+        """
         self.make_frame_plot()
 
         # Use matplotlib.animation.FuncAnimation to put it all together
@@ -203,6 +207,9 @@ class Plotter:
             )
 
     def detect(self, t=0.002):
+        """
+        Find the 1d probavility distributions given x=0.8 and the specified t, defaulting to t=0.002
+        """
         U_w_h = self.U.shape[1]
         x = int(U_w_h * 0.8)
         detection = self.probabilities[int(t / self.dt), :, x].copy()
@@ -213,6 +220,13 @@ class Plotter:
         plt.plot(y, detection)
         plt.title("1-d probability distribution double slit")
         self.save_tikz("output/plots/heyutherocksteadycrew.tex", heat_plot=False)
+        plt.show()
+
+    def deviation_plot(self):
+        total_probabilities = np.sum(self.probabilities, axis=(1,2))
+        deviations = np.abs(1 - total_probabilities)
+        t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
+        plt.plot(t, deviations)
         plt.show()
 
     def tweak_tikz_plots(self, filename, heat_plot):
@@ -283,6 +297,7 @@ if __name__ == "__main__":
         help="The filename of the binary file to plot",
         default="output/data/*",
     )
+
     parser.add_argument(
         "-t",
         "--time_plots",
@@ -290,7 +305,7 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
-        "-a",
+        "-an",
         "--animation",
         help="To create an animation of probablity",
         action="store_true",
@@ -301,8 +316,18 @@ if __name__ == "__main__":
         help="Detect and plot at x=0.8 at the end of the simulation. Include filename",
         action="store_true",
     )
-    parser.add_argument("-all", "--all", help="To run everything", action="store_true")
-
+    parser.add_argument(
+        "-de",
+        "--deviation",
+        help="Plot deviation from 1 of the total probability",
+        action="store_true"
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        help="Produce all plots and animation",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     filenames = (
@@ -311,22 +336,21 @@ if __name__ == "__main__":
         else [args.filename]
     )
 
-    if not args.time_plots and not args.animation and not args.detect and not args.all:
+    if not args.time_plots and not args.animation and not args.detect and not args.all and not args.deviation:
         parser.print_help()
         exit()
 
-    if args.time_plots or args.all:
-        for filename in filenames:
-            print(f"Plotting time plots for {filename}")
+    for filename in filenames:
             plot = Plotter(filename)
-            plot.make_time_plots()
-    if args.animation or args.all:
-        for filename in filenames:
-            print(f"Creating animation for {filename}")
-            plot = Plotter(filename)
-            plot.create_animation()
-    if args.detect or args.all:
-        for filename in filenames:
-            print(f"Plotting detect for {filename}")
-            plot = Plotter(filename)
-            plot.detect()
+            if args.time_plots or args.all:
+                print(f"Plotting time plots for {filename}")
+                plot.make_time_plots()
+            if args.animation or args.all:
+                print(f"Creating animation for {filename}")
+                plot.create_animation()
+            if args.detect or args.all:
+                print(f"Plotting detect for {filename}")
+                plot.detect()
+            if args.deviation or args.all:
+                print(f"Plotting error for {filename}")
+                plot.deviation_plot()
