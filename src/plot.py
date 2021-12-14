@@ -44,7 +44,7 @@ class Plotter:
             filename : str
                 The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
         """
-        self.filename = filename
+        self.filename = "output/data/" + filename
         self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
 
         self.U = pa.cx_mat()
@@ -53,6 +53,10 @@ class Plotter:
         U_w_h = int(np.sqrt(self.U.shape[1]))
         self.U.resize(self.U.shape[0], U_w_h, U_w_h)
         self.U = self.U.transpose((0, 2, 1))
+        # Add in boundary points
+        U_boundary = np.zeros((self.U.shape[0], U_w_h + 2, U_w_h + 2), dtype=complex)
+        U_boundary[:,1:-1,1:-1] = self.U
+        self.U = U_boundary
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
 
