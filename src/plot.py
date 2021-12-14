@@ -139,7 +139,13 @@ class Plotter:
                     t / self.dt, plot_type=plot_type, is_animation=False
                 )
 
-                filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
+                #  filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
+                filename = (
+                    "output/plots/"
+                    + self.filename.split("/")[-1][:-4]
+                    + f"_t{t:.3e}_{plot_type}.tex"
+                )
+
                 title = self.latex_plot_name(filename, plot_type, t)
                 plt.title(title)
                 self.save_tikz(filename)
@@ -163,7 +169,7 @@ class Plotter:
         if save:
             # Save the animation as an mp4. This requires ffmpeg or mencoder to be
             anim.save(
-                self.filename.replace("/data/", "/animations/").replace(".bin", ".mp4"),
+                "output/animations/" + self.filename.split("/")[-1][:-4] + ".mp4",
                 writer="ffmpeg",
                 bitrate=-1,
                 fps=30,
