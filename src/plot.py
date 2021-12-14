@@ -18,6 +18,8 @@ sns.set_theme()
 
 
 class PlotType(Enum):
+    """Plot type enum."""
+
     REAL = 1
     IMAGINARY = 2
     PROBABILITY = 3
@@ -27,16 +29,20 @@ class Plotter:
     """
     Class for handling plotting of the results from a system
     """
+
+    # Config variables
     fontsize = 12
     t_min = 0
     x_min, x_max = 0, 1
     y_min, y_max = 0, 1
 
     def __init__(self, filename):
-        """
-        Provide the name of the binary file. Will unpack the armadillo matrix to a numpy ndarray  
+        """Parses the armadillo matrix and make it ready for plotting
 
-        Filename should contain the substring "_dt={dt as used in the system}"
+        Parameters
+        ----------
+            filename : str
+                The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
         """
         self.filename = filename
         self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
@@ -49,18 +55,38 @@ class Plotter:
         self.U = self.U.transpose((0, 2, 1))
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
-        
+
     def get_norm(self, frame_idx, data=None):
-        """
-        Get norm for rescaling the colormap
+        """Get a norm for the colormap of the probability distribution
+
+        Parameters
+        ----------
+            frame_idx : int
+                The index of the frame to be plotted
+            data : ndarray
+                The data to be plotted. If not specified, the probabilities are used
+
+        Returns
+        -------
+            norm : matplotlib.colors.Normalize
+                The norm for the colormap
         """
         if data is None:
             data = self.probabilities[frame_idx]
         return matplotlib.cm.colors.Normalize(vmin=0.0, vmax=np.max(data))
 
     def current_time(self, frame_idx):
-        """
-        Get the time correspnding to the frame at frame_idx in U
+        """Return the current time of the system
+
+        Parameters
+        ----------
+            frame_idx : int
+                The index of the frame to be plotted
+
+        Returns
+        -------
+            current_time : float
+                The current time of the system
         """
         return self.t_min + frame_idx * self.dt
 
@@ -70,12 +96,21 @@ class Plotter:
         plot_type: PlotType = PlotType.PROBABILITY,
         is_animation=True,
     ):
-        """
-        Plot the frame at frame_idx in U. Specify plot_type, default is PROBABILITY, 
-        giving a colormap of the probability distribution
+        """Make a plot of the system at a given frame
 
-        Also possible is plot_type REAL or IMAGINARY, giving respectively 
-        a plot of the real and imaginary part of the wave function
+        Parameters
+        ----------
+            frame_idx : int
+                The index of the frame to be plotted
+            plot_type : PlotType
+                The type of plot to be made
+            is_animation : bool
+                Whether to make an animation or not
+
+        Raises
+        ------
+            ValueError :
+                If the frame is not a valid index
         """
         if isinstance(frame_idx, float):
             if frame_idx != int(frame_idx):
@@ -125,8 +160,17 @@ class Plotter:
         cbar.ax.tick_params(labelsize=self.fontsize)
 
     def animation(self, frame_idx):
-        """
-        Return the animation
+        """Make one step of the animation for the system
+
+        Parameters
+        ----------
+            frame_idx : int
+                The index of the frame to be plotted
+
+        Returns
+        -------
+            self.img : matplotlib.image.AxesImage
+                The image of the plot
         """
         self.img.set_norm(self.get_norm(frame_idx))
         self.img.set_data(self.probabilities[frame_idx])
@@ -134,6 +178,22 @@ class Plotter:
         return self.img
 
     def latex_plot_name(self, filename, plot_type, t):
+        """Create a latex object with the code for plotting the image
+
+        Parameters
+        ----------
+            filename : str
+                The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
+            plot_type : PlotType
+                The type of plot to be made
+            t : float
+                The time of the plot
+
+        Returns
+        -------
+            title : str
+                The title of the plot
+        """
         text = """\\begin{figure}\n    \\centering\n    """
         caption = f"A plot of the "
         title = ""
@@ -146,10 +206,8 @@ class Plotter:
         elif plot_type == PlotType.IMAGINARY:
             title = f"Imaginary part of the wavefunction for t={t}"
             caption += f"imaginary part of the wavefunction u(x,y;t)"
-        #  caption += rf" for a system with $h=0.005$, $\Delta t=2.5\cdot 10^{{-5}}$, $T=0.002$, $x_c=0.25$, $\sigma_x=0.05$, $p_x=200$, $y_c=0.5$, $\sigma_y=0.2$, $p_y=0$, $v_0=1\cdot 10^{{10}}$ for a double slit setup"
         caption += rf" for t={t} using setup 1"
-        #  text += f"\\text{{{title}}}\\par\\medskip\n    "
-        text += f"\\input{{{filename.replace('output/plots/', 'Plots/')}}}\n    "
+        text += f"\\input{{{'Plots/' + filename.split('/')[-1]}}}\n    "
         text += f"\\caption{{{caption}}} "
         text += f"\\label{{fig:{str(plot_type)}_{t}}}\n\\end{{figure}}\n"
         print(text)
@@ -157,16 +215,13 @@ class Plotter:
         return title
 
     def make_time_plots(self):
-        """
-        Produce time plots for the times t=0, t=0.01 and t=0.002
-        """
+        """Produce time plots for the times t=0, t=0.01 and t=0.002"""
         for t in [0, 0.001, 0.002]:
             for plot_type in [PlotType.PROBABILITY, PlotType.REAL, PlotType.IMAGINARY]:
                 self.make_frame_plot(
                     t / self.dt, plot_type=plot_type, is_animation=False
                 )
 
-                #  filename = f"{self.filename[:-4].replace('/data/', '/plots/')}_t{t:.3e}_{plot_type}.tex"
                 filename = (
                     "output/plots/"
                     + self.filename.split("/")[-1][:-4]
@@ -178,12 +233,19 @@ class Plotter:
                 self.save_tikz(filename)
 
     def create_animation(self, show=False, save=True):
+        """Create an animation of the system
+
+        Parameters
+        ----------
+            show : bool
+                Whether to show the animation or not. Default is False
+            save : bool
+                Whether to save the animation or not. Default is True
         """
-        Create animations. Specify if animations is to be shown and saved
-        """
+        plt.grid(False)
+
         self.make_frame_plot()
 
-        # Use matplotlib.animation.FuncAnimation to put it all together
         anim = FuncAnimation(
             self.fig,
             self.animation,
@@ -197,7 +259,6 @@ class Plotter:
             plt.show()
 
         if save:
-            # Save the animation as an mp4. This requires ffmpeg or mencoder to be
             anim.save(
                 "output/animations/" + self.filename.split("/")[-1][:-4] + ".mp4",
                 writer="ffmpeg",
@@ -207,8 +268,12 @@ class Plotter:
             )
 
     def detect(self, t=0.002):
-        """
-        Find the 1d probavility distributions given x=0.8 and the specified t, defaulting to t=0.002
+        """Find the 1d probavility distributions given x=0.8
+
+        Parameters
+        ----------
+            t : float
+                The time at which to find the distribution. Default is 0.002
         """
         U_w_h = self.U.shape[1]
         x = int(U_w_h * 0.8)
@@ -223,14 +288,15 @@ class Plotter:
         plt.show()
 
     def deviation_plot(self):
-        total_probabilities = np.sum(self.probabilities, axis=(1,2))
+        """Plot the deviation of the wavefunction from the ground state"""
+        total_probabilities = np.sum(self.probabilities, axis=(1, 2))
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
         plt.plot(t, deviations)
         plt.show()
 
     def tweak_tikz_plots(self, filename, heat_plot):
-        """Tweaks the tikz plots to make them look better
+        """Tweaks the tikz plots to make them look better by modifying some of the parameters of the tikz plots
 
         Parameters
         ----------
@@ -254,8 +320,6 @@ class Plotter:
                     f.write(line)
                 elif "majorticks" in line:
                     f.write(line.replace("false", "true"))
-                #  elif "begin{tikzpicture}" in line:
-                #      f.write(line[:-1] + "[scale=0.80]" + "\n")
                 elif "begin{axis}[" in line:
                     f.write(line)
                     if heat_plot:
@@ -278,8 +342,6 @@ class Plotter:
             filename : str
                 The filename of the tikz plot to be saved
         """
-        #  plt.grid(True)
-        #  tikzplotlib.clean_figure()
         tikzplotlib.save(filename)
         self.tweak_tikz_plots(filename, heat_plot)
         plt.close()
@@ -320,7 +382,7 @@ if __name__ == "__main__":
         "-de",
         "--deviation",
         help="Plot deviation from 1 of the total probability",
-        action="store_true"
+        action="store_true",
     )
     parser.add_argument(
         "-a",
@@ -336,21 +398,27 @@ if __name__ == "__main__":
         else [args.filename]
     )
 
-    if not args.time_plots and not args.animation and not args.detect and not args.all and not args.deviation:
+    if (
+        not args.time_plots
+        and not args.animation
+        and not args.detect
+        and not args.all
+        and not args.deviation
+    ):
         parser.print_help()
         exit()
 
     for filename in filenames:
-            plot = Plotter(filename)
-            if args.time_plots or args.all:
-                print(f"Plotting time plots for {filename}")
-                plot.make_time_plots()
-            if args.animation or args.all:
-                print(f"Creating animation for {filename}")
-                plot.create_animation()
-            if args.detect or args.all:
-                print(f"Plotting detect for {filename}")
-                plot.detect()
-            if args.deviation or args.all:
-                print(f"Plotting error for {filename}")
-                plot.deviation_plot()
+        plot = Plotter(filename)
+        if args.time_plots or args.all:
+            print(f"Plotting time plots for {filename}")
+            plot.make_time_plots()
+        if args.animation or args.all:
+            print(f"Creating animation for {filename}")
+            plot.create_animation()
+        if args.detect or args.all:
+            print(f"Plotting detect for {filename}")
+            plot.detect()
+        if args.deviation or args.all:
+            print(f"Plotting error for {filename}")
+            plot.deviation_plot()
