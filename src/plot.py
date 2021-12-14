@@ -22,13 +22,20 @@ class PlotType(Enum):
 
 
 class Plotter:
-    # config variables
+    """
+    Class for handling plotting of the results from a system
+    """
     fontsize = 12
     t_min = 0
     x_min, x_max = 0, 1
     y_min, y_max = 0, 1
 
     def __init__(self, filename):
+        """
+        Provide the name of the binary file. Will unpack the armadillo matrix to a numpy ndarray  
+
+        Filename should contain the substring "_dt={dt as used in the system}"
+        """
         self.filename = filename
         self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
 
@@ -42,11 +49,17 @@ class Plotter:
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
 
     def get_norm(self, frame_idx):
+        """
+        Get norm for rescaling the colormap
+        """
         return matplotlib.cm.colors.Normalize(
             vmin=0.0, vmax=np.max(self.probabilities[frame_idx])
         )
 
     def current_time(self, frame_idx):
+        """
+        Get the time correspnding to the frame at frame_idx in U
+        """
         return self.t_min + frame_idx * self.dt
 
     def make_frame_plot(
@@ -55,6 +68,13 @@ class Plotter:
         plot_type: PlotType = PlotType.PROBABILITY,
         time_label=True,
     ):
+        """
+        Plot the frame at frame_idx in U. Specify plot_type, default is PROBABILITY, 
+        giving a colormap of the probability distribution
+
+        Also possible is plot_type REAL or IMAGINARY, giving respectively 
+        a plot of the real and imaginary part of the wave function
+        """
         if isinstance(frame_idx, float):
             if frame_idx != int(frame_idx):
                 raise ValueError("frame_idx must be an integer")
@@ -117,12 +137,18 @@ class Plotter:
         # Add a text element showing the time
 
     def animation(self, frame_idx):
+        """
+        Return the animation
+        """
         self.img.set_norm(self.get_norm(frame_idx))
         self.img.set_data(self.probabilities[frame_idx])
         self.time_txt.set_text(f"t = {self.current_time(frame_idx):.3e}")
         return self.img
 
     def make_time_plots(self):
+        """
+        Produce time plots for the times t=0, t=0.01 and t=0.002
+        """
         for t in [0, 0.001, 0.002]:
             self.make_frame_plot(
                 t / self.dt, plot_type=PlotType.PROBABILITY, time_label=False

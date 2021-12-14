@@ -34,6 +34,12 @@ void print_help_message() {
     cout << "\t-h\tShow this help message" << endl;
 }
 
+/**
+ * @brief Parse the content of the infile to a setup for the system
+ * 
+ * @param filename name of the infile
+ * @return Config the setup of the system
+ */
 Config parse_config(string filename) {
     ifstream config_file(filename);
 
@@ -53,6 +59,13 @@ Config parse_config(string filename) {
     return config;
 }
 
+/**
+ * @brief Produces filename to correspond with the filename
+ * 
+ * @param config The setup of the system
+ * @param slits The number of slits
+ * @return string A name for the outfile
+ */
 string config_to_filename(Config config, Slits slits){
     string s = "output/data/";
     switch(slits){
