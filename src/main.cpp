@@ -66,23 +66,37 @@ Config parse_config(string filename) {
  * @param slits The number of slits
  * @return string A name for the outfile
  */
-string config_to_filename(Config config, Slits slits){
-    string s = "output/data/";
+string to_string(Slits slits){
+    string s = "";
     switch(slits){
         case Slits::one: s += "simple"; break;
         case Slits::two: s += "double"; break;
         case Slits::three: s += "triple"; break;
     }
-    s += "_slit_dt=" + to_string(config.dt) + ".bin";
     return s;
 }
 
-int main() {
-    Config config = parse_config("config.in");
-    cerr << "Using config "; config.print();
-    Slits slits = Slits::two;
+void setup_and_run_system(Slits slits, int config_nr, Config config){
     CrackSystem cs(config, slits);
-    cs.simulate(config_to_filename(config, slits));
+    cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + "dt=" + to_string(config.dt) + ".bin");
+}
 
+int main() {
+    for (int i = 1; i <= 3; i++){
+        string config_file_name = "config" + to_string(i) + ".in";
+        Config config = parse_config(config_file_name);
+        cerr << "Using config "; config.print();
+        Slits slits;
+        if (i == 3){
+            for (int nslits = Slits::one; nslits <= Slits::three; nslits++){
+                slits = static_cast<Slits>(nslits);
+                setup_and_run_system(slits, i, config);
+            }
+        }
+        else {
+            slits = Slits::two;
+            setup_and_run_system(slits, i, config);
+        }   
+    }
     return 0;
 }

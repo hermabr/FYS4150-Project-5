@@ -2,7 +2,7 @@
 
 #include <armadillo>
 
-enum struct Slits{
+enum Slits{
     one, two, three
 };
 
