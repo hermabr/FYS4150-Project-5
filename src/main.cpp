@@ -9,18 +9,6 @@
 using namespace std;
 using namespace std::complex_literals;
 
-bool has_flag(const std::string& option, char** begin, char** end){
-    return std::find(begin, end, option) != end;
-}
-
-void print_help_message() {
-    cout << "Usage" << endl;
-    cout << "\t./runner [flags]" << endl;
-    cout << endl;
-    cout << "Options:" << endl;
-    cout << "\t-h\tShow this help message" << endl;
-}
-
 /**
  * @brief Parse the content of the infile to a setup for the system
  * 
@@ -28,6 +16,7 @@ void print_help_message() {
  * @return Config the setup of the system
  */
 Config parse_config(string filename) {
+    // read the file
     ifstream config_file(filename);
 
     string variable_name;
@@ -35,12 +24,16 @@ Config parse_config(string filename) {
 
     double values[10];
 
+    // check that the file contains the correct variables and read them
     for (int i = 0; i < 10; i++) {
         config_file >> variable_name;
-        assert (variable_name == variable_names[i]);
+        // check that the variable is correct
+        if (variable_name != variable_names[i]) throw invalid_argument("Invalid config file. The variable " + variable_name + " is missing.");
+        
         config_file >> values[i];
     }
 
+    // create the config object using the values read from the file
     Config config {values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9]};
 
     return config;
@@ -52,14 +45,13 @@ Config parse_config(string filename) {
  * @param slits The number of slits
  * @return string 'simple', 'double' or 'triple'
  */
-string to_string(Slits slits){
-    string s = "";
-    switch(slits){
-        case Slits::one: s += "simple"; break;
-        case Slits::two: s += "double"; break;
-        case Slits::three: s += "triple"; break;
+string to_string(Slits slits) {
+    switch (slits) {
+        case Slits::one:   return "simple";
+        case Slits::two:   return "double";
+        case Slits::three: return "triple";
+        default:           throw invalid_argument("Invalid number of slits");
     }
-    return s;
 }
 
 /** 
@@ -76,10 +68,12 @@ void setup_and_run_system(Slits slits, int config_nr, Config config){
 
 int main() {
     for (int i = 1; i <= 3; i++){
+        // set the filename of the config file and parse it
         string config_file_name = "config" + to_string(i) + ".in";
         Config config = parse_config(config_file_name);
-        cerr << "Using config "; config.print();
+        cerr << "Running using config " + to_string(i) +": "; config.print();
         Slits slits;
+        // run for all slits if config 3, else run for just two-slit
         if (i == 3){
             for (int nslits = Slits::one; nslits <= Slits::three; nslits++){
                 slits = static_cast<Slits>(nslits);
