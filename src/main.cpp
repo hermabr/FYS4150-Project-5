@@ -6,9 +6,6 @@
 #include <project5/config.hpp>
 #include <project5/schrodinger_simulation.hpp>
 
-#define cd complex<double>
-#define cmat arma::cx_mat
-
 using namespace std;
 using namespace std::complex_literals;
 

@@ -8,11 +8,6 @@
 using namespace std;
 using namespace std::complex_literals;
 
-// TODO: Remove these and replace with the non-macros
-#define cd complex<double>
-#define cmat arma::cx_mat
-
-// TODO: Rename hehe
 SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
@@ -51,7 +46,7 @@ void SchrodingerSimulation::initialize_A_B() {
     arma::cx_vec a(M_star_square, arma::fill::zeros);
     arma::cx_vec b(M_star_square, arma::fill::zeros);
 
-    cd r = 1i * dt / (2. * h * h);
+    complex<double> r = 1i * dt / (2. * h * h);
 
     for (int k = 0; k < M_star_square; k++) {
         int i = k / M_star;
@@ -103,7 +98,7 @@ arma::cx_vec SchrodingerSimulation::initialize_u(double x_c, double y_c, double 
         double y = i_to_y(i);
         for (int j = 0; j < M_star; j++){
             double x = j_to_x(j);
-            cd v = exp(
+            complex<double> v = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
                 + 1.i * p_x * (x - x_c) + 1.i * p_y * (y - y_c)
@@ -156,7 +151,7 @@ arma::sp_mat SchrodingerSimulation::initialize_V(double v_0, Slits slits){
 }
 
 double SchrodingerSimulation::probability_at(int i, int j){
-    cd uij = u(ij_to_k(i, j));
+    complex<double> uij = u(ij_to_k(i, j));
     return real(uij) * real(uij) + imag(uij) * imag(uij);
 }
 

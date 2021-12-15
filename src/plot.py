@@ -415,10 +415,8 @@ class Plotter:
 
 
 if __name__ == "__main__":
-    # TODO: Do we want to run the c++ code from python?
     parser = argparse.ArgumentParser(description="For running the plotting")
 
-    # TODO: RUNNING ARGUMENTS DO BE LOOKIN KINDA SUS
     parser.add_argument(
         "-f",
         "--filename",

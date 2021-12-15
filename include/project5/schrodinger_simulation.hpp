@@ -6,7 +6,6 @@ enum Slits{
     one, two, three
 };
 
-// TODO: Rename class name
 class SchrodingerSimulation {
     public:
         SchrodingerSimulation(Config config, Slits Slits);
