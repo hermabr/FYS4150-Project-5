@@ -8,6 +8,8 @@
 using namespace std;
 using namespace std::complex_literals;
 
+// IMPORTANT NOTE: Documentation is found in the header file.
+
 SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
