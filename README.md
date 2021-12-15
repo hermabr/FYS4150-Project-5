@@ -1,6 +1,6 @@
 # FYS4150 Project 5 - Schrödinger equation
 
-# Introduction
+## Introduction
 
 This repo contains code for simulating the two-dimensional time-dependent
 Schrödinger equation. To do so, the Crank-Nicolson method for PDE's has been
@@ -12,9 +12,9 @@ The C++ script uses config1.in and config2.in with at double slit setup, and
 config3.in for a simple, double and triple slit setup. Running will produce in
 all five binary files containing information about the system at each timestep.
 
-# Usage
+## Usage
 
-## Python
+### Python
 
 ```
 usage: src/plot.py [-h] [-f FILENAME] [-t] [-an] [-d] [-de] [-a]
@@ -32,7 +32,7 @@ options:
   -a, --all             Produce all plots and animation
 ```
 
-## C++
+### C++
 
 Compiling
 
@@ -46,7 +46,7 @@ Running
 ./runner
 ```
 
-# Structure
+## Structure
 
 ```
 .
@@ -66,12 +66,12 @@ Running
    ├── plot.py                 -  the main script for plotting the code
 ```
 
-# Code documentation
+## Code documentation
 
 For more in depth description of files see the docstring in the python file for
 python and the header files for c++.
 
-# Notation and indices
+## Notation and indices
 
 The indexing in the C++ code differs from the notation in the report. Here are
 the major differences:
