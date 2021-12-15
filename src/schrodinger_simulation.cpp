@@ -24,7 +24,6 @@ SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(co
     cout << scientific << setprecision(15);
 }
 
-// TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
 int SchrodingerSimulation::ij_to_k(int i, int j){
     if (j >= M_star_square or i >= M_star_square or j < 0 or i < 0) throw out_of_range("Requires 0 <= i, j < M - 2");
     return i * M_star + j;
