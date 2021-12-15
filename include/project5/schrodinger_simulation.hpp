@@ -91,12 +91,4 @@ class SchrodingerSimulation {
          * @param j 
          * @return double The probabilty at the grid point
          */
-        double probability_at(int i, int j);
-        /**
-        * @brief The sum of the probabilities at each point in the grid. 
-        * Since our boundary condition is 0, we expect this to be 1 at all times
-        * 
-        * @return double The total probabilty
-        */
-        double total_probability();
 };

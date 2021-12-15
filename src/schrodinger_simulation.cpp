@@ -22,7 +22,6 @@ SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(co
     initialize_A_B();
     u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
     cout << scientific << setprecision(15);
-    cout << "deviation from 1 of total probability after initialization: " << 1 - total_probability() << endl;
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
@@ -152,21 +151,6 @@ arma::sp_mat SchrodingerSimulation::initialize_V(double v_0, Slits slits){
     return V;
 }
 
-double SchrodingerSimulation::probability_at(int i, int j){
-    complex<double> uij = u(ij_to_k(i, j));
-    return real(uij) * real(uij) + imag(uij) * imag(uij);
-}
-
-double SchrodingerSimulation::total_probability(){
-    double p = 0;
-    for (int i = 0; i < M_star; i++)
-        for (int j = 0; j < M_star; j++){
-            p += probability_at(i, j);
-        }
-            
-    return p;
-}
-
 void SchrodingerSimulation::simulate(string outfile){
     int timesteps = (int) (T / dt);
 
@@ -174,18 +158,12 @@ void SchrodingerSimulation::simulate(string outfile){
     for (int i = 0; i < M_star_square; i ++){
             U(0, i) = u(i);
     }
-    double maximum_deviation = abs(1 - total_probability());
     
     for (int t = 1; t <= timesteps; t ++){
         u = solve_for_u_next(u);
         for (int i = 0; i < M_star_square; i ++){
             U(t, i) = u(i);
         }
-        double deviation = abs(1 - total_probability());
-        if (deviation > maximum_deviation)
-            maximum_deviation = deviation;
-        cout << "deviation from 1 of total probability after " << t <<" step(s): " << deviation << endl;
     }
-    cout << "Greatest deviation from 1: " << maximum_deviation << endl;
     U.save(outfile);
 }
