@@ -333,7 +333,7 @@ class Plotter:
         total_probabilities = np.sum(self.probabilities, axis=(1, 2))
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
-        plt.scatter(t, deviations)
+        #  plt.scatter(t, deviations)
         plt.plot(t, deviations)
         plt.title("Deviation from 1 of the total probability")
         plt.xlabel("t")
@@ -343,7 +343,7 @@ class Plotter:
             line_plot=True,
         )
 
-    def tweak_tikz_plots(self, filename, heat_plot, scatter_plot, line_plot):
+    def tweak_tikz_plots(self, filename, heat_plot, scatter_line_plot, line_plot):
         """Tweaks the tikz plots to make them look better by modifying some of the parameters of the tikz plots
 
         Parameters
@@ -372,11 +372,13 @@ class Plotter:
                     f.write(line)
                     if heat_plot:
                         f.write("width=7cm,\n")
-                    elif line_plot:
+                    elif line_plot or scatter_line_plot:
                         f.write("scaled y ticks=false,\n")
-                    elif scatter_plot:
-                        f.write("mark size=1.25,")
-                        f.write("scaled y ticks=false,\n")
+                        #  if scatter_line_plot:
+                        #      f.write("mark size=0.5,")
+                    #  elif scatter_line_plot:
+                    #      f.write("mark size=1.25,")
+                    #      f.write("scaled y ticks=false,\n")
                 elif "end{axis}" in line:
                     f.write(line)
                     should_write = False
@@ -385,7 +387,9 @@ class Plotter:
                 else:
                     f.write(line)
 
-    def save_tikz(self, filename, heat_plot=False, scatter_plot=False, line_plot=False):
+    def save_tikz(
+        self, filename, heat_plot=False, scatter_line_plot=False, line_plot=False
+    ):
         """Saves the plot as a tikz-tex file
 
         Parameters
@@ -397,12 +401,12 @@ class Plotter:
             scatter_plot : bool
                 Whether to save the scatter plot or not. Default is False
         """
-        if not sum([heat_plot, scatter_plot, line_plot]) == 1:
+        if not sum([heat_plot, scatter_line_plot, line_plot]) == 1:
             raise ValueError(
                 "The plot must be of one of the types heat, scatter or line"
             )
         tikzplotlib.save(filename)
-        self.tweak_tikz_plots(filename, heat_plot, scatter_plot, line_plot)
+        self.tweak_tikz_plots(filename, heat_plot, scatter_line_plot, line_plot)
         plt.close()
 
 
