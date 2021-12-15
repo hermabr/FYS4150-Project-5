@@ -4,10 +4,7 @@
 #include <iostream>
 #include <armadillo>
 #include <project5/config.hpp>
-#include <project5/crack_nicolson.hpp>
-
-#define cd complex<double>
-#define cmat arma::cx_mat
+#include <project5/schrodinger_simulation.hpp>
 
 using namespace std;
 using namespace std::complex_literals;
@@ -66,10 +63,16 @@ string to_string(Slits slits){
     return s;
 }
 
+/** 
+ * @brief Setup the system
+ * 
+ * @param slits The number of slits
+ * @param config The setup of the system
+ * @return Schrodinger_simulation The system
+ */
 void setup_and_run_system(Slits slits, int config_nr, Config config){
-    CrackSystem cs(config, slits);
-    // cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + "dt=" + to_string(config.dt) + ".bin");
-    cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + ".bin");
+    SchrodingerSimulation ss(config, slits);
+    ss.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + ".bin");
 }
 
 int main() {

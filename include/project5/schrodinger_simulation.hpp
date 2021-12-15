@@ -6,10 +6,9 @@ enum Slits{
     one, two, three
 };
 
-// TODO: Rename class name
-class CrackSystem {
+class SchrodingerSimulation {
     public:
-        CrackSystem(Config config, Slits Slits);
+        SchrodingerSimulation(Config config, Slits Slits);
         void simulate(std::string outfile);
     private:
         // void initialize_A_B(int M, arma::cx_mat & A, arma::cx_mat & B, double dt, double h, arma::cx_mat v);

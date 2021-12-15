@@ -3,17 +3,12 @@
 #include <assert.h> 
 #include <armadillo>
 #include "project5/config.hpp"
-#include "project5/crack_nicolson.hpp"
+#include "project5/schrodinger_simulation.hpp"
 
 using namespace std;
 using namespace std::complex_literals;
 
-// TODO: Remove these and replace with the non-macros
-#define cd complex<double>
-#define cmat arma::cx_mat
-
-// TODO: Rename hehe
-CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
+SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
 
     opts.symmetric = true;
@@ -29,29 +24,29 @@ CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.d
 }
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
-int CrackSystem::ij_to_k(int i, int j){
+int SchrodingerSimulation::ij_to_k(int i, int j){
     if (j >= M_star_square or i >= M_star_square or j < 0 or i < 0) throw out_of_range("Requires 0 <= i, j < M - 2");
     return i * M_star + j;
 }
 
-double CrackSystem::i_to_y(int i){
+double SchrodingerSimulation::i_to_y(int i){
     return 1 - (double)(i + 1) / M_star;
 }
 
-double CrackSystem::j_to_x(int j){
+double SchrodingerSimulation::j_to_x(int j){
     return (double)(j + 1) / M_star;
 }
 
 
 
-void CrackSystem::initialize_A_B() {
+void SchrodingerSimulation::initialize_A_B() {
     A = arma::sp_cx_mat(M_star_square, M_star_square);
     B = arma::sp_cx_mat(M_star_square, M_star_square);
 
     arma::cx_vec a(M_star_square, arma::fill::zeros);
     arma::cx_vec b(M_star_square, arma::fill::zeros);
 
-    cd r = 1i * dt / (2. * h * h);
+    complex<double> r = 1i * dt / (2. * h * h);
 
     for (int k = 0; k < M_star_square; k++) {
         int i = k / M_star;
@@ -90,20 +85,20 @@ void CrackSystem::initialize_A_B() {
     }
 }
 
-arma::cx_vec CrackSystem::solve_for_u_next(arma::cx_vec u) {
+arma::cx_vec SchrodingerSimulation::solve_for_u_next(arma::cx_vec u) {
     arma::cx_vec b = B * u;
     arma::cx_vec new_u = arma::spsolve(A, b, "superlu", opts);
     return new_u;
 }
 
-arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
+arma::cx_vec SchrodingerSimulation::initialize_u(double x_c, double y_c, double sigma_x, double sigma_y, double p_x, double p_y) {
     arma::cx_vec u(M_star_square);
     double s = 0;
     for (int i = 0; i < M_star; i++){
         double y = i_to_y(i);
         for (int j = 0; j < M_star; j++){
             double x = j_to_x(j);
-            cd v = exp(
+            complex<double> v = exp(
                 -(x - x_c) * (x - x_c) / (2 * sigma_x * sigma_x) 
                 - (y - y_c) * (y - y_c) / (2 * sigma_y * sigma_y)
                 + 1.i * p_x * (x - x_c) + 1.i * p_y * (y - y_c)
@@ -117,7 +112,7 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
 }
 
 
-arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){ 
+arma::sp_mat SchrodingerSimulation::initialize_V(double v_0, Slits slits){ 
     arma::sp_mat V(M_star, M_star);
     arma::vec slit_tops;
 
@@ -155,12 +150,12 @@ arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){
     return V;
 }
 
-double CrackSystem::probability_at(int i, int j){
-    cd uij = u(ij_to_k(i, j));
+double SchrodingerSimulation::probability_at(int i, int j){
+    complex<double> uij = u(ij_to_k(i, j));
     return real(uij) * real(uij) + imag(uij) * imag(uij);
 }
 
-double CrackSystem::total_probability(){
+double SchrodingerSimulation::total_probability(){
     double p = 0;
     for (int i = 0; i < M_star; i++)
         for (int j = 0; j < M_star; j++){
@@ -170,8 +165,7 @@ double CrackSystem::total_probability(){
     return p;
 }
 
-void CrackSystem::simulate(string outfile){
-    // TODO: CHANGE THIS PLZ
+void SchrodingerSimulation::simulate(string outfile){
     int timesteps = (int) (T / dt);
 
     arma::cx_mat U = arma::cx_mat(timesteps + 1, M_star_square);

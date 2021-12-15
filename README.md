@@ -54,3 +54,10 @@ Running
 # Code documentation
 
 For more in depth description of files see the docstring in the python file for python and the header files for c++.
+
+# Notation and indices
+
+The indexing in the C++ code differs from the notation in the report. Here are the major differences:
+
+* We use i to index the y-coordinates and j to index the x-coordinates
+* All indexing starts at 0.

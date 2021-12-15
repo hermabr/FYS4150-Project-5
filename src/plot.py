@@ -1,7 +1,8 @@
 import re
 import argparse
 import matplotlib
-from matplotlib import animation
+
+#  from matplotlib import animation
 import tikzplotlib
 import numpy as np
 import pyarma as pa
@@ -12,7 +13,8 @@ import seaborn as sns
 from enum import Enum
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+#  from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 sns.set_theme()
 
@@ -112,7 +114,9 @@ class Plotter:
         """
         if data is None:
             data = self.probabilities[frame_idx]
-        return matplotlib.cm.colors.Normalize(vmin=0.0, vmax=np.max(data))
+        return matplotlib.cm.colors.Normalize(
+            vmin=min(0, np.min(data)), vmax=np.max(data)
+        )
 
     def current_time(self, frame_idx):
         """Return the current time of the system
@@ -240,10 +244,10 @@ class Plotter:
             title = f"Probability distribution for t={t}"
             caption += f"probability distribution of p(x,y;t)"
         elif plot_type == PlotType.REAL:
-            title = f"Real part of the wavefunction for t={t}"
+            title = f"Real part of u for t={t}"
             caption += f"real part of the wavefunction u(x,y;t)"
         elif plot_type == PlotType.IMAGINARY:
-            title = f"Imaginary part of the wavefunction for t={t}"
+            title = f"Imaginary part of u for t={t}"
             caption += f"imaginary part of the wavefunction u(x,y;t)"
         caption += rf" for t={t} using setup 3"
         text += f"\\input{{{'Plots/' + filename.split('/')[-1][:-4]}}}\n    "
@@ -319,7 +323,7 @@ class Plotter:
         detection /= np.sum(detection)
         y = np.linspace(0, 1, len(detection))
         plt.ylabel(f"$p(y | x=0.8; t={t})$")
-        plt.xlabel("x")
+        plt.xlabel("y")
         plt.plot(y, detection)
         plt.title(f"1-d probability distribution {self.get_slit_type()} slit")
         self.save_tikz(
@@ -333,17 +337,17 @@ class Plotter:
         total_probabilities = np.sum(self.probabilities, axis=(1, 2))
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
-        plt.scatter(t, deviations)
+        #  plt.scatter(t, deviations)
         plt.plot(t, deviations)
         plt.title("Deviation from 1 of the total probability")
         plt.xlabel("t")
-        plt.ylabel(r"$|1 - \sum_{i,j} p(x_i,y_i;t)|$")
+        plt.ylabel(r"$|1 - \sum_{i,j} p(x_i,y_j;t)|$")
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
             line_plot=True,
         )
 
-    def tweak_tikz_plots(self, filename, heat_plot, scatter_plot, line_plot):
+    def tweak_tikz_plots(self, filename, heat_plot, scatter_line_plot, line_plot):
         """Tweaks the tikz plots to make them look better by modifying some of the parameters of the tikz plots
 
         Parameters
@@ -372,11 +376,13 @@ class Plotter:
                     f.write(line)
                     if heat_plot:
                         f.write("width=7cm,\n")
-                    elif line_plot:
+                    elif line_plot or scatter_line_plot:
                         f.write("scaled y ticks=false,\n")
-                    elif scatter_plot:
-                        f.write("mark size=1.25,")
-                        f.write("scaled y ticks=false,\n")
+                        #  if scatter_line_plot:
+                        #      f.write("mark size=0.5,")
+                    #  elif scatter_line_plot:
+                    #      f.write("mark size=1.25,")
+                    #      f.write("scaled y ticks=false,\n")
                 elif "end{axis}" in line:
                     f.write(line)
                     should_write = False
@@ -385,7 +391,9 @@ class Plotter:
                 else:
                     f.write(line)
 
-    def save_tikz(self, filename, heat_plot=False, scatter_plot=False, line_plot=False):
+    def save_tikz(
+        self, filename, heat_plot=False, scatter_line_plot=False, line_plot=False
+    ):
         """Saves the plot as a tikz-tex file
 
         Parameters
@@ -397,20 +405,18 @@ class Plotter:
             scatter_plot : bool
                 Whether to save the scatter plot or not. Default is False
         """
-        if not sum([heat_plot, scatter_plot, line_plot]) == 1:
+        if not sum([heat_plot, scatter_line_plot, line_plot]) == 1:
             raise ValueError(
                 "The plot must be of one of the types heat, scatter or line"
             )
         tikzplotlib.save(filename)
-        self.tweak_tikz_plots(filename, heat_plot, scatter_plot, line_plot)
+        self.tweak_tikz_plots(filename, heat_plot, scatter_line_plot, line_plot)
         plt.close()
 
 
 if __name__ == "__main__":
-    # TODO: Do we want to run the c++ code from python?
     parser = argparse.ArgumentParser(description="For running the plotting")
 
-    # TODO: RUNNING ARGUMENTS DO BE LOOKIN KINDA SUS
     parser.add_argument(
         "-f",
         "--filename",
