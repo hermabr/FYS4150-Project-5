@@ -326,7 +326,6 @@ class Plotter:
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
             scatter_plot=True,
         )
-        #  plt.show()
 
     def tweak_tikz_plots(self, filename, heat_plot, scatter_plot, line_plot):
         """Tweaks the tikz plots to make them look better by modifying some of the parameters of the tikz plots
