@@ -42,7 +42,7 @@ class Plotter:
         Parameters
         ----------
             filename : str
-                The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
+                The filename of the binary representation of the matrix to be plotted. The file must contain the filename (excluding suffix) of the config used in the simulation"
         """
         self.filename = filename
         self.dt = self.get_dt_from_config()
@@ -222,7 +222,7 @@ class Plotter:
         Parameters
         ----------
             filename : str
-                The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
+                The filename of the binary representation of the matrix to be plotted. The file must contain the filename (excluding suffix) of the config used in the simulation"
             plot_type : PlotType
                 The type of plot to be made
             t : float
