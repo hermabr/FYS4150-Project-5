@@ -12,6 +12,13 @@ class SchrodingerSimulation {
         void simulate(std::string outfile);
     private:
         // void initialize_A_B(int M, arma::cx_mat & A, arma::cx_mat & B, double dt, double h, arma::cx_mat v);
+        /**
+         * @brief Maps values of i and j to k, raising error if values for i and j are out of range
+         * 
+         * @param i 
+         * @param j 
+         * @return int 
+         */
         int ij_to_k(int i, int j);
         /**
          * @brief Mapping indices j to values x

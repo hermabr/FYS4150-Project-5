@@ -354,6 +354,12 @@ class Plotter:
         ----------
             filename : str
                 The filename of the tikz plot to be tweaked
+            heat_plot: bool
+                True if heat plot
+            scatter_line_plot: bool
+                True if scatter and line plot
+            line_plot: bool
+                True if line plot
         """
         with open(filename, "r") as f:
             lines = f.readlines()

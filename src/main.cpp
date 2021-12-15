@@ -47,11 +47,10 @@ Config parse_config(string filename) {
 }
 
 /**
- * @brief Produces filename to correspond with the filename
+ * @brief Parses number of slits to 'simple', 'double' or 'triple'
  * 
- * @param config The setup of the system
  * @param slits The number of slits
- * @return string A name for the outfile
+ * @return string 'simple', 'double' or 'triple'
  */
 string to_string(Slits slits){
     string s = "";
