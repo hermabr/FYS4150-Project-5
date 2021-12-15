@@ -444,9 +444,11 @@ class Plotter:
             filename : str
                 The filename of the tikz plot to be saved
             heat_plot : bool
-                Whether to save the heat plot or not. Default is True
+                Whether to save the heat plot or not
+            scatter_line_plot : bool
+                Whether to save the combined scatter and line plot or not
             scatter_plot : bool
-                Whether to save the scatter plot or not. Default is False
+                Whether to save the scatter plot or not
         """
         # check that exactly on of the parameters are 1
         if not sum([heat_plot, scatter_line_plot, line_plot]) == 1:

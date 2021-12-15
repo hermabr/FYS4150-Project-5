@@ -25,10 +25,6 @@ SchrodingerSimulation::SchrodingerSimulation(Config config, Slits Slits) :  h(co
     initialize_A_B();
     // initialize the matrix u
     u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
-
-    // TODO: Not this
-    // // set high precision in the cout
-    // cout << scientific << setprecision(15);
 }
 
 int SchrodingerSimulation::ij_to_k(int i, int j){

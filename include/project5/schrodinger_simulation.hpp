@@ -2,16 +2,29 @@
 
 #include <armadillo>
 
+/**
+  * @brief The enum for the different slits
+  */
 enum Slits{
     one, two, three
 };
 
 class SchrodingerSimulation {
     public:
+        /**
+          * @brief Constructor
+          *
+          * @param Config  The configuration of the simulation
+          * @param Slits   The number slits to be used in the simulation
+          */
         SchrodingerSimulation(Config config, Slits Slits);
+        /**
+          * @brief Simulate the system
+          * 
+          * @params outfile The file to write the results to
+          */
         void simulate(std::string outfile);
     private:
-        // void initialize_A_B(int M, arma::cx_mat & A, arma::cx_mat & B, double dt, double h, arma::cx_mat v);
         /**
          * @brief Maps values of i and j to k, raising error if values for i and j are out of range
          * 
@@ -38,6 +51,7 @@ class SchrodingerSimulation {
          * @brief Options for the SuperLU solver used in our Crank-Nicolson implementation
          * 
          */
+        // variables
         arma::superlu_opts opts;
         int M, M_star, M_star_square;
         double h, dt, T;
@@ -61,6 +75,11 @@ class SchrodingerSimulation {
          * 
          */
         void initialize_A_B();
+        /**
+          * @brief Solve for the next u given the current u
+          *
+          * @param u  The current state of the wave function
+          */
         arma::cx_vec solve_for_u_next(arma::cx_vec u);
         /**
          * @brief Initialize the vector u as according to a unnormalized gaussian wave packet, 
@@ -83,12 +102,4 @@ class SchrodingerSimulation {
          * @return arma::sp_mat 
          */
         arma::sp_mat initialize_V(double v_0, Slits Slits);
-        /**
-         * @brief Probability at grid point (i, j).
-         * Calculated as |U(i, j)|²
-         * 
-         * @param i 
-         * @param j 
-         * @return double The probabilty at the grid point
-         */
 };

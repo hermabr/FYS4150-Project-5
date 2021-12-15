@@ -4,11 +4,8 @@
 #include <complex>
 
 struct Config {
+    /** Contains the config variables */
     double h, dt, T, x_c, y_c, s_x, s_y, p_x, p_y, v_0;
-
-    // initialize
-    // void init(std::string filename) {
-    //     string variable_names[10] = {"h", "dt", "T", "x_c", "y_c", "s_x", "s_y", "p_x", "p_y", "v_0"}
 
     void print() {
         std::cerr << "h=" << h << ", ";
@@ -23,29 +20,3 @@ struct Config {
         std::cerr << "v_0=" << v_0 << std::endl;
     }
 };
-
-// Config config1 = {
-//     .h = 0.005,
-//     .dt = 2.5*1e-5,
-//     .T = 0.008,
-//     .x_c = 0.25,
-//     .s_x = 0.05,
-//     .p_x = 200.,
-//     .y_c = 0.5,
-//     .s_y = 0.05,
-//     .p_y = 0,
-//     .v_0 = 0
-// };
-//
-// Config config2 = {
-//     .h = 0.005,
-//     .dt = 2.5*1e-5,
-//     .T = 0.002,
-//     .x_c = 0.25,
-//     .s_x = 0.05,
-//     .p_x = 200.,
-//     .y_c = 0.5,
-//     .s_y = 0.20,
-//     .p_y = 0,
-//     .v_0 = 1e10
-// };
