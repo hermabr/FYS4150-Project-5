@@ -44,8 +44,8 @@ class Plotter:
             filename : str
                 The filename of the binary representation of the matrix to be plotted. The file must contain the substring "_dt={dt as used in the system}"
         """
-        self.filename = "output/data/" + filename
-        self.dt = float(filename[filename.index("_dt") + 4 : filename.index(".bin")])
+        self.filename = filename
+        self.dt = self.get_dt_from_config()
 
         self.U = pa.cx_mat()
         self.U.load(self.filename, pa.arma_binary)
@@ -55,10 +55,32 @@ class Plotter:
         self.U = self.U.transpose((0, 2, 1))
         # Add in boundary points
         U_boundary = np.zeros((self.U.shape[0], U_w_h + 2, U_w_h + 2), dtype=complex)
-        U_boundary[:,1:-1,1:-1] = self.U
+        U_boundary[:, 1:-1, 1:-1] = self.U
         self.U = U_boundary
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
+
+    def get_dt_from_config(self):
+        """Get the dt from the config file
+
+        Returns
+        -------
+            dt : float
+                The dt from the config file
+
+        Raises
+        ------
+            ValueError
+                If the dt is not found in the config file
+        """
+        config = (
+            re.search(r"(?:simple|double|triple)_(.*)\..*", filename).group(1) + ".in"
+        )
+        with open(config) as f:
+            for line in f:
+                if line.startswith("dt"):
+                    return float(line.split(" ")[1])
+        raise ValueError("Could not find dt in config file")
 
     def get_norm(self, frame_idx, data=None):
         """Get a norm for the colormap of the probability distribution
@@ -296,14 +318,10 @@ class Plotter:
         total_probabilities = np.sum(self.probabilities, axis=(1, 2))
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
-
-        #  t = np.mean(t.reshape(-1, 5), axis=1)
-        #  deviations = np.mean(deviations.reshape(-1, 5), axis=1)
-        #  plt.scatter(t, deviations)
-
-        #  plt.plot(t, deviations)
         plt.scatter(t, deviations)
-        #  sns.scatterplot(t, deviations)
+        plt.title("Deviation from 1 of the total probability")
+        plt.xlabel("t")
+        plt.ylabel(r"$|1 - \sum_{x,y} p(x,y;t)|$")
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
             scatter_plot=True,
@@ -343,6 +361,7 @@ class Plotter:
                         f.write("scaled y ticks=false,\n")
                     elif scatter_plot:
                         f.write("mark size=1.25,")
+                        f.write("scaled y ticks=false,\n")
                 elif "end{axis}" in line:
                     f.write(line)
                     should_write = False

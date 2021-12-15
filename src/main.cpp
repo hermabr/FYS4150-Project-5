@@ -68,7 +68,8 @@ string to_string(Slits slits){
 
 void setup_and_run_system(Slits slits, int config_nr, Config config){
     CrackSystem cs(config, slits);
-    cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + "dt=" + to_string(config.dt) + ".bin");
+    // cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + "dt=" + to_string(config.dt) + ".bin");
+    cs.simulate("output/data/" + to_string(slits) + "_" + "config" + to_string(config_nr) + ".bin");
 }
 
 int main() {
