@@ -49,14 +49,17 @@ class Plotter:
 
         self.U = pa.cx_mat()
         self.U.load(self.filename, pa.arma_binary)
-        self.U = np.array(self.U)
+        self.U = np.array(self.U, dtype=np.clongdouble)
         U_w_h = int(np.sqrt(self.U.shape[1]))
         self.U.resize(self.U.shape[0], U_w_h, U_w_h)
         self.U = self.U.transpose((0, 2, 1))
-        # Add in boundary points
-        U_boundary = np.zeros((self.U.shape[0], U_w_h + 2, U_w_h + 2), dtype=complex)
-        U_boundary[:, 1:-1, 1:-1] = self.U
-        self.U = U_boundary
+
+        self.U = np.pad(
+            self.U,
+            pad_width=((0, 0), (1, 1), (1, 1)),
+            mode="constant",
+            constant_values=0,
+        )
 
         self.probabilities = np.real(self.U) ** 2 + np.imag(self.U) ** 2
 
@@ -81,6 +84,16 @@ class Plotter:
                 if line.startswith("dt"):
                     return float(line.split(" ")[1])
         raise ValueError("Could not find dt in config file")
+
+    def get_slit_type(self):
+        """Get the slit type from the config file
+
+        Returns
+        -------
+            slit_type : str
+                The slit type from the config file
+        """
+        return re.search(r"(simple|double|triple)", filename).group(1)
 
     def get_norm(self, frame_idx, data=None):
         """Get a norm for the colormap of the probability distribution
@@ -232,8 +245,8 @@ class Plotter:
         elif plot_type == PlotType.IMAGINARY:
             title = f"Imaginary part of the wavefunction for t={t}"
             caption += f"imaginary part of the wavefunction u(x,y;t)"
-        caption += rf" for t={t} using setup 1"
-        text += f"\\input{{{'Plots/' + filename.split('/')[-1]}}}\n    "
+        caption += rf" for t={t} using setup 3"
+        text += f"\\input{{{'Plots/' + filename.split('/')[-1][:-4]}}}\n    "
         text += f"\\caption{{{caption}}} "
         text += f"\\label{{fig:{str(plot_type)}_{t}}}\n\\end{{figure}}\n"
         print(text)
@@ -268,9 +281,8 @@ class Plotter:
             save : bool
                 Whether to save the animation or not. Default is True
         """
-        plt.grid(False)
-
         self.make_frame_plot()
+        plt.grid(False)
 
         anim = FuncAnimation(
             self.fig,
@@ -309,8 +321,11 @@ class Plotter:
         plt.ylabel(f"$p(y | x=0.8; t={t})$")
         plt.xlabel("x")
         plt.plot(y, detection)
-        plt.title("1-d probability distribution double slit")
-        self.save_tikz("output/plots/heyutherocksteadycrew.tex", line_plot=True)
+        plt.title(f"1-d probability distribution {self.get_slit_type()} slit")
+        self.save_tikz(
+            "output/plots/" + self.filename.split("/")[-1][:-4] + "_detect.tex",
+            line_plot=True,
+        )
         plt.show()
 
     def deviation_plot(self):
@@ -319,12 +334,13 @@ class Plotter:
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
         plt.scatter(t, deviations)
+        plt.plot(t, deviations)
         plt.title("Deviation from 1 of the total probability")
         plt.xlabel("t")
         plt.ylabel(r"$|1 - \sum_{x,y} p(x,y;t)|$")
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
-            scatter_plot=True,
+            line_plot=True,
         )
 
     def tweak_tikz_plots(self, filename, heat_plot, scatter_plot, line_plot):
