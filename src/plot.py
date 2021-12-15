@@ -337,7 +337,7 @@ class Plotter:
         plt.plot(t, deviations)
         plt.title("Deviation from 1 of the total probability")
         plt.xlabel("t")
-        plt.ylabel(r"$|1 - \sum_{x,y} p(x,y;t)|$")
+        plt.ylabel(r"$|1 - \sum_{i,j} p(x_i,y_i;t)|$")
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
             line_plot=True,
