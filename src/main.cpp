@@ -1,13 +1,3 @@
-// #include <iostream>
-// #include <complex>
-//
-// using namespace std::complex_literals;
-//
-// int main() {
-//     auto drugs = 1.0 + 3.0i;
-//     std::cout << drugs << '\n';
-// }
-
 #include <complex>
 #include <fstream>
 #include <assert.h> 

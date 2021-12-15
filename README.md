@@ -1,5 +1,11 @@
 # FYS4150 Project 5 - Schrödinger equation
 
+# Introduction
+This repo contains code for simulating the two-dimensional time-dependent Schrödinger equation.
+To do so, the Crank-Nicolson method for PDE's has been implemented. We apply this to a 
+double-slit-in-a-box setup and variations on this. To better illustrate the results, there is 
+a Python script for generating animations and various plots.
+
 # Usage
 
 ## Python

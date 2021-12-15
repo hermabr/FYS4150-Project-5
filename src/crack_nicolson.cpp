@@ -15,17 +15,12 @@ using namespace std::complex_literals;
 // TODO: Rename hehe
 CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.dt), T(config.T) {
     if (1.0/h != floor(1.0/h)) throw invalid_argument("1/h must be a whole number");
-    // TODO: Check that T/dt is a whole number?
 
-    arma::superlu_opts opts;
     opts.symmetric = true;
 
     M = (int) (1.0 / h) + 1;
     M_star = M - 2; M_star_square = M_star * M_star;
     
-    // TODO: DO SOMETHING WITH v
-    cmat v = cmat(M, M);
-    v.fill(cd(1, 0));
     V = initialize_V(config.v_0, Slits);
     initialize_A_B();
     u = initialize_u(config.x_c, config.y_c, config.s_x, config.s_y, config.p_x, config.p_y);
@@ -35,9 +30,7 @@ CrackSystem::CrackSystem(Config config, Slits Slits) :  h(config.h), dt(config.d
 
 // TODO: MIGHT THIS BE (i-1) and (j-1), not i and j?
 int CrackSystem::ij_to_k(int i, int j){
-    // TODO: is this assert correct?
-    if (j >= M_star_square or i >= M_star_square) throw exception(); // TODO: What exception?
-    // return i * M_star_square + j;
+    if (j >= M_star_square or i >= M_star_square or j < 0 or i < 0) throw out_of_range("Requires 0 <= i, j < M - 2");
     return i * M_star + j;
 }
 
@@ -125,7 +118,6 @@ arma::cx_vec CrackSystem::initialize_u(double x_c, double y_c, double sigma_x, d
 
 
 arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){ 
-    //arma::sp_mat V(M_star, M_star, arma::fill::zeros);
     arma::sp_mat V(M_star, M_star);
     arma::vec slit_tops;
 
@@ -144,7 +136,7 @@ arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){
     auto is_slit = [slit_tops](double y){
         float slit_width = .05;
         for (int i = 0; i < slit_tops.size(); i++){
-            if (y <= slit_tops(i) and y > slit_tops(i) - slit_width) // is inclusive correct?
+            if (y <= slit_tops(i) and y > slit_tops(i) - slit_width)
                 return true;
         }
         return false;
@@ -154,7 +146,7 @@ arma::sp_mat CrackSystem::initialize_V(double v_0, Slits slits){
         double y = i_to_y(i);
         if (is_slit(y))
             continue;
-        int j = (.49 - h) / h; // is this correct?
+        int j = (.49 - h) / h;
         while (j_to_x(j) < .51){
             V(i, j) = v_0;
             j++;
