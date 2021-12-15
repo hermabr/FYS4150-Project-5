@@ -1,8 +1,6 @@
 import re
 import argparse
 import matplotlib
-
-#  from matplotlib import animation
 import tikzplotlib
 import numpy as np
 import pyarma as pa
@@ -13,8 +11,6 @@ import seaborn as sns
 from enum import Enum
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-
-#  from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 sns.set_theme()
 
@@ -50,12 +46,16 @@ class Plotter:
         self.dt = self.get_dt_from_config()
 
         self.U = pa.cx_mat()
+        # parse the binary file using pyarma
         self.U.load(self.filename, pa.arma_binary)
         self.U = np.array(self.U, dtype=np.clongdouble)
         U_w_h = int(np.sqrt(self.U.shape[1]))
+        # reshape from 2d to 3d
         self.U.resize(self.U.shape[0], U_w_h, U_w_h)
+        # swap the x and y axis, since they are indexed differently in armadillo and numpy
         self.U = self.U.transpose((0, 2, 1))
 
+        # pad the matrix with zeros on all sides (boundary points)
         self.U = np.pad(
             self.U,
             pad_width=((0, 0), (1, 1), (1, 1)),
@@ -78,6 +78,7 @@ class Plotter:
             ValueError
                 If the dt is not found in the config file
         """
+        # search the filename for either simple, double or triple, and then take the next part (which is the name of the config file)
         config = (
             re.search(r"(?:simple|double|triple)_(.*)\..*", filename).group(1) + ".in"
         )
@@ -95,6 +96,7 @@ class Plotter:
             slit_type : str
                 The slit type from the config file
         """
+        # extract either simple, double or triple from the filename
         return re.search(r"(simple|double|triple)", filename).group(1)
 
     def get_norm(self, frame_idx, data=None):
@@ -112,8 +114,13 @@ class Plotter:
             norm : matplotlib.colors.Normalize
                 The norm for the colormap
         """
+        # use probability data if no data is specified
         if data is None:
             data = self.probabilities[frame_idx]
+        # Returns the normalizer. The normalizer will have have vmin is either 0
+        # or min(data). This is because we want negative values be shown for
+        # the real and imaginary parts, but we never want the heat plots to
+        # start at a higher value than 0
         return matplotlib.cm.colors.Normalize(
             vmin=min(0, np.min(data)), vmax=np.max(data)
         )
@@ -155,14 +162,17 @@ class Plotter:
             ValueError :
                 If the frame is not a valid index
         """
+        # check that the frame is a whole number if it is a float
         if isinstance(frame_idx, float):
             if frame_idx != int(frame_idx):
                 raise ValueError("frame_idx must be an integer")
             frame_idx = int(frame_idx)
 
+        # clear old plots before making the new one
         plt.close()
         self.fig, self.ax = plt.subplots()
 
+        # get the data and label according to the plot type
         if plot_type == PlotType.PROBABILITY:
             data = self.probabilities[frame_idx]
             cbar_label = r"$p(x, y; t)$"
@@ -173,6 +183,7 @@ class Plotter:
             data = np.imag(self.U[frame_idx])
             cbar_label = r"Im$(u(x, y; t))$"
 
+        # make a plot of the actual data to be plotted
         self.img = plt.imshow(
             data,
             cmap="viridis",
@@ -180,6 +191,7 @@ class Plotter:
             extent=[self.x_min, self.x_max, self.y_min, self.y_max],
         )
 
+        # add the time label if it is an animation
         if is_animation:
             self.time_txt = plt.text(
                 0.95 * self.x_max,
@@ -215,8 +227,11 @@ class Plotter:
             self.img : matplotlib.image.AxesImage
                 The image of the plot
         """
+        # update the norm to fit the data of the current frame
         self.img.set_norm(self.get_norm(frame_idx))
+        # update the actual data to be the currect frame
         self.img.set_data(self.probabilities[frame_idx])
+        # update the time label
         self.time_txt.set_text(f"t = {self.current_time(frame_idx):.3e}")
         return self.img
 
@@ -237,9 +252,11 @@ class Plotter:
             title : str
                 The title of the plot
         """
+        # initialize the text, caption and title
         text = """\\begin{figure}\n    \\centering\n    """
         caption = f"A plot of the "
         title = ""
+        # add a title and caption for the plot depending on the plot type
         if plot_type == PlotType.PROBABILITY:
             title = f"Probability distribution for t={t}"
             caption += f"probability distribution of p(x,y;t)"
@@ -249,6 +266,8 @@ class Plotter:
         elif plot_type == PlotType.IMAGINARY:
             title = f"Imaginary part of u for t={t}"
             caption += f"imaginary part of the wavefunction u(x,y;t)"
+
+        # add the lower part of the latex plots and print
         caption += rf" for t={t} using setup 3"
         text += f"\\input{{{'Plots/' + filename.split('/')[-1][:-4]}}}\n    "
         text += f"\\caption{{{caption}}} "
@@ -265,12 +284,14 @@ class Plotter:
                     t / self.dt, plot_type=plot_type, is_animation=False
                 )
 
+                # the file should be saved to the folder 'output/plots', and have information for both the time and plot type
                 filename = (
                     "output/plots/"
                     + self.filename.split("/")[-1][:-4]
                     + f"_t{t:.3e}_{plot_type}.tex"
                 )
 
+                # add the correct title and save the plot to file
                 title = self.latex_plot_name(filename, plot_type, t)
                 plt.title(title)
                 self.save_tikz(filename, heat_plot=True)
@@ -285,9 +306,11 @@ class Plotter:
             save : bool
                 Whether to save the animation or not. Default is True
         """
+        # initialize the heat plot and hide the grid
         self.make_frame_plot()
         plt.grid(False)
 
+        # create the actual animation part
         anim = FuncAnimation(
             self.fig,
             self.animation,
@@ -301,6 +324,7 @@ class Plotter:
             plt.show()
 
         if save:
+            # save the animation to file, using a high dpi and 30 fps
             anim.save(
                 "output/animations/" + self.filename.split("/")[-1][:-4] + ".mp4",
                 writer="ffmpeg",
@@ -317,15 +341,21 @@ class Plotter:
             t : float
                 The time at which to find the distribution. Default is 0.002
         """
+        # get the width of the matrix
         U_w_h = self.U.shape[1]
+        # set x to be 0.8 * the width of the matrix (x=0.8)
         x = int(U_w_h * 0.8)
+        # cut out the interesting part of the matrix (where x=0.8)
         detection = self.probabilities[int(t / self.dt), :, x].copy()
+        # normalize the results
         detection /= np.sum(detection)
         y = np.linspace(0, 1, len(detection))
+        # add labels to the plot
         plt.ylabel(f"$p(y | x=0.8; t={t})$")
         plt.xlabel("y")
         plt.plot(y, detection)
         plt.title(f"1-d probability distribution {self.get_slit_type()} slit")
+        # save the plot to file
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_detect.tex",
             line_plot=True,
@@ -334,14 +364,17 @@ class Plotter:
 
     def deviation_plot(self):
         """Plot the deviation of the wavefunction from the ground state"""
+        # get the total probability per time step by summing over all the x and y values, per t
         total_probabilities = np.sum(self.probabilities, axis=(1, 2))
+        # get the deviation by subtracting the ground state probability from the total probability
         deviations = np.abs(1 - total_probabilities)
         t = np.linspace(self.t_min, self.dt * (len(deviations) - 1), len(deviations))
-        #  plt.scatter(t, deviations)
+        # add labels to the plot
         plt.plot(t, deviations)
         plt.title("Deviation from 1 of the total probability")
         plt.xlabel("t")
         plt.ylabel(r"$|1 - \sum_{i,j} p(x_i,y_j;t)|$")
+        # save the plot to file
         self.save_tikz(
             "output/plots/" + self.filename.split("/")[-1][:-4] + "_deviations.tex",
             line_plot=True,
@@ -361,15 +394,18 @@ class Plotter:
             line_plot: bool
                 True if line plot
         """
+        # read the entire plot file, which will be used when tweaking the plot
         with open(filename, "r") as f:
             lines = f.readlines()
 
         with open(filename, "w") as f:
+            # is true only while writing the first axis (to avoid having duplicate plots)
             should_write = True
             for line in lines:
                 if not should_write and "end{tikzpicture}" not in line:
                     continue
                 if ".png" in line:
+                    # add the folder of the plots if the plot contains a png (used for the heat plots)
                     line = re.sub(
                         r"{(.*\.png)}",
                         r"{Plots/\1}",
@@ -377,24 +413,25 @@ class Plotter:
                     )
                     f.write(line)
                 elif "majorticks" in line:
+                    # show the major ticks
                     f.write(line.replace("false", "true"))
                 elif "begin{axis}[" in line:
                     f.write(line)
                     if heat_plot:
+                        # set the width of the plot, to avoid having the heat plot be too wide
                         f.write("width=7cm,\n")
                     elif line_plot or scatter_line_plot:
+                        # show the scaled y ticks on the side, not on top to avoid collisions with the title
                         f.write("scaled y ticks=false,\n")
-                        #  if scatter_line_plot:
-                        #      f.write("mark size=0.5,")
-                    #  elif scatter_line_plot:
-                    #      f.write("mark size=1.25,")
-                    #      f.write("scaled y ticks=false,\n")
                 elif "end{axis}" in line:
                     f.write(line)
+                    # stop writing of the axis was finished
                     should_write = False
                 elif "title=" in line:
+                    # make the title bold
                     f.write(line.replace("{", "\\textbf{"))
                 else:
+                    # the default case, just write the line
                     f.write(line)
 
     def save_tikz(
@@ -411,18 +448,23 @@ class Plotter:
             scatter_plot : bool
                 Whether to save the scatter plot or not. Default is False
         """
+        # check that exactly on of the parameters are 1
         if not sum([heat_plot, scatter_line_plot, line_plot]) == 1:
             raise ValueError(
                 "The plot must be of one of the types heat, scatter or line"
             )
+        # actually save the plot as a tikz-tex file
         tikzplotlib.save(filename)
+        # tweak the plot to make it look better
         self.tweak_tikz_plots(filename, heat_plot, scatter_line_plot, line_plot)
         plt.close()
 
 
 if __name__ == "__main__":
+    # define the arg parser, used for taking command line arguments
     parser = argparse.ArgumentParser(description="For running the plotting")
 
+    # add the arguments
     parser.add_argument(
         "-f",
         "--filename",
@@ -430,7 +472,6 @@ if __name__ == "__main__":
         help="The filename of the binary file to plot",
         default="output/data/*",
     )
-
     parser.add_argument(
         "-t",
         "--time_plots",
@@ -463,12 +504,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    # get all the filenames specified. if no filename is specified, use all the files in the folder
     filenames = (
         [args.filename[:-1] + filename for filename in os.listdir(args.filename[:-1])]
         if args.filename[-1] == "*"
         else [args.filename]
     )
 
+    # check that at least one of the plots is specified. if not: write out a help message
     if (
         not args.time_plots
         and not args.animation
@@ -479,6 +522,7 @@ if __name__ == "__main__":
         parser.print_help()
         exit()
 
+    # loop through the files and make the plots specified by the arguments
     for filename in filenames:
         plot = Plotter(filename)
         if args.time_plots or args.all:
