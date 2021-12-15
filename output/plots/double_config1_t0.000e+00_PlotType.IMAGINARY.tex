@@ -1,0 +1,32 @@
+% This file was created with tikzplotlib v0.9.16.
+\begin{tikzpicture}
+
+\definecolor{color0}{rgb}{0.917647058823529,0.917647058823529,0.949019607843137}
+
+\begin{axis}[
+width=7cm,
+axis background/.style={fill=color0},
+axis line style={white},
+colorbar,
+colorbar style={ylabel={Im$(u(x, y; t))$}},
+colormap/viridis,
+point meta max=0.0534296885415046,
+point meta min=-0.0547792660773359,
+tick align=outside,
+title=\textbf{Imaginary part of u for t=0},
+x grid style={white},
+xlabel=\textcolor{white!15!black}{x},
+xmajorgrids,
+xmajorticks=true,
+xmin=0, xmax=1,
+xtick style={color=white!15!black},
+y grid style={white},
+ylabel=\textcolor{white!15!black}{y},
+ymajorgrids,
+ymajorticks=true,
+ymin=0, ymax=1,
+ytick style={color=white!15!black}
+]
+\addplot graphics [includegraphics cmd=\pgfimage,xmin=0, xmax=1, ymin=0, ymax=1] {Plots/double_config1_t0.000e+00_PlotType.IMAGINARY-000.png};
+\end{axis}
+\end{tikzpicture}

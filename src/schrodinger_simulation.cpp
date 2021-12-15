@@ -152,7 +152,7 @@ arma::sp_mat SchrodingerSimulation::initialize_V(double v_0, Slits slits){
     // define is_slit to be if the current y coordinate is in the slit
     auto is_slit = [slit_tops](double y){
         float slit_width = .05;
-        for (int i = 0; i < slit_tops.size(); i++){
+        for (auto i = 0; (long long unsigned int) i < slit_tops.size(); i++){
             if (y <= slit_tops(i) and y > slit_tops(i) - slit_width)
                 return true;
         }
@@ -184,6 +184,7 @@ void SchrodingerSimulation::simulate(string outfile){
     }
     
     for (int t = 1; t <= timesteps; t ++){
+        cerr << "Simulating time step " << t << "/" << timesteps << "\r" << flush;
         // solve for the next u
         u = solve_for_u_next(u);
         // write the current u to the matrix U

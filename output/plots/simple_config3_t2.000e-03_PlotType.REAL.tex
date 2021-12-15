@@ -1,0 +1,32 @@
+% This file was created with tikzplotlib v0.9.16.
+\begin{tikzpicture}
+
+\definecolor{color0}{rgb}{0.917647058823529,0.917647058823529,0.949019607843137}
+
+\begin{axis}[
+width=7cm,
+axis background/.style={fill=color0},
+axis line style={white},
+colorbar,
+colorbar style={ylabel={Re$(u(x, y; t))$}},
+colormap/viridis,
+point meta max=0.030270204930093,
+point meta min=-0.0289392612678967,
+tick align=outside,
+title=\textbf{Real part of u for t=0.002},
+x grid style={white},
+xlabel=\textcolor{white!15!black}{x},
+xmajorgrids,
+xmajorticks=true,
+xmin=0, xmax=1,
+xtick style={color=white!15!black},
+y grid style={white},
+ylabel=\textcolor{white!15!black}{y},
+ymajorgrids,
+ymajorticks=true,
+ymin=0, ymax=1,
+ytick style={color=white!15!black}
+]
+\addplot graphics [includegraphics cmd=\pgfimage,xmin=0, xmax=1, ymin=0, ymax=1] {Plots/simple_config3_t2.000e-03_PlotType.REAL-000.png};
+\end{axis}
+\end{tikzpicture}
