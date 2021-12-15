@@ -166,7 +166,6 @@ double SchrodingerSimulation::total_probability(){
 }
 
 void SchrodingerSimulation::simulate(string outfile){
-    // TODO: CHANGE THIS PLZ
     int timesteps = (int) (T / dt);
 
     arma::cx_mat U = arma::cx_mat(timesteps + 1, M_star_square);
