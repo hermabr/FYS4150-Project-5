@@ -16,7 +16,7 @@ all five binary files containing information about the system at each timestep.
 
 ## Python
 
-```bash
+```
 usage: src/plot.py [-h] [-f FILENAME] [-t] [-an] [-d] [-de] [-a]
 
 For running the plotting
